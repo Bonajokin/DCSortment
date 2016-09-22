@@ -109,15 +109,15 @@ namespace DCSortment
             {
                 fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
                 char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
-                string test = currentDirectory + "Files\\";
-                test = Regex.Replace(test,@"\\",".");
+                string completedDirectory= currentDirectory + "Files\\";
+                completedDirectory = Regex.Replace(completedDirectory, @"\\",".");
                 
 
 
 
                 foreach (string filename in fileNames)
                 {
-                    string[] splitName = Regex.Split(filename, @test);
+                    string[] splitName = Regex.Split(filename, @completedDirectory);
                     cleanFileNames.Add(splitName[1]);
                 }
 
@@ -125,6 +125,27 @@ namespace DCSortment
                 foreach (string filename in cleanFileNames)
                 {
                     Console.WriteLine(filename);
+                }
+
+
+                //sortedHouseList and cleanFileNames
+                House currentHouse;
+                int indexOfHouseFile;
+                string renameName;
+
+                currentHouse = SortedHouseList.First();
+                indexOfHouseFile = 
+
+                if (cleanFileNames[indexOfHouseFile].Contains("_NEW"))
+                {
+                    renameName = _namingUpperPosition + "_" + currentHouse.rating;
+                    incrementNamingConvention(_namingUpperPosition, true);
+                    Console.WriteLine(renameName + " - Next Convetion -> " + _namingUpperPosition);
+                } else
+                {
+                    renameName = _namingLowerPosition + "_" + currentHouse.rating + "_" + "CHNGTAG";
+                    incrementNamingConvention(_namingLowerPosition, false);
+                    Console.WriteLine(renameName + " - Next Convetion -> " + _namingLowerPosition);
                 }
 
 
@@ -142,6 +163,44 @@ namespace DCSortment
 
 
             Console.Read();
+        }
+
+        public static string incrementNamingConvention(string theString, bool isUpper)
+        {
+            string incrementedString = null;
+            char[] theCharString = theString.ToCharArray();
+
+            switch (isUpper)
+            {
+
+                case true:
+
+                    if (((int)theCharString[1] + 1) > 90)
+                    {
+                        incrementedString = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                    }
+                    else
+                    {
+                        incrementedString = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                    }
+                    break;
+
+                case false:
+
+                    if (((int)theCharString[1] + 1) > 122)
+                    {
+                        incrementedString = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                    }
+                    else
+                    {
+                        incrementedString = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                    }
+                    break;
+
+
+            }
+
+            return incrementedString;
         }
 
 
