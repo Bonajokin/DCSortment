@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
@@ -22,6 +23,7 @@ namespace DCSortment
             List<House> houses = new List<House>();
             List<House> SortedHouseList;
             List<string> fileNames;
+            List<string> cleanFileNames = new List<string>();
 
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
@@ -88,7 +90,7 @@ namespace DCSortment
             catch (COMException)
             {
 
-                Console.WriteLine("\nThe required dataset .xlsx file was not found. Please ensure \"DataSet.xlsx\" is in the current directory as the executeable.");
+                Console.WriteLine("\nThe required dataset .xlsx file was not found. Please ensure \"dataset.xlsx\" is in the current directory as the executeable.");
 
             }
 
@@ -97,8 +99,7 @@ namespace DCSortment
 
             SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
 
-            //
-
+            
             foreach (House house in SortedHouseList) {
                 Console.WriteLine(house.houseName + " -> " + house.rating);
             }
@@ -107,21 +108,33 @@ namespace DCSortment
             try
             {
                 fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
+                char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
                 string test = currentDirectory + "Files\\";
-           
+                test = Regex.Replace(test,@"\\",".");
+                
+
+
 
                 foreach (string filename in fileNames)
                 {
-                    Console.WriteLine(filename);
-
+                    string[] splitName = Regex.Split(filename, @test);
+                    cleanFileNames.Add(splitName[1]);
                 }
 
-           
+
+                foreach (string filename in cleanFileNames)
+                {
+                    Console.WriteLine(filename);
+                }
+
+
             }
 
             catch (DirectoryNotFoundException)
             {
+
                 Console.WriteLine("\nThe working file directory was not found. Please Ensure that the folder named \"Files\" has been created in the same directory as the program.)");
+
             }
 
             
