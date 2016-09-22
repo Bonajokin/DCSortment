@@ -19,10 +19,11 @@ namespace DCSortment
 
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@"C:\Users\Otis\Documents\Visual Studio 2015\Projects\DCSortment\inputTest2.xlsx");
+            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@"C:\Users\Otis\Documents\Visual Studio 2015\Projects\DCSortment\inputTest.xlsx");
             Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
             Excel.Range xlRange = xlWorksheet.UsedRange;
             List<House> houses = new List<House>();
+            List<House> SortedList;
 
             //Reading and storing input dataset
             int rowCount = xlRange.Rows.Count;
@@ -76,6 +77,14 @@ namespace DCSortment
 
             //End of Reading and storing input
 
+            //Sort list
+
+            SortedList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
+
+            //
+
+
+
 
 
             Console.Read();
@@ -84,7 +93,7 @@ namespace DCSortment
 
     }
 
-    public class House {
+    public class House{
 
         public string houseName { get; set; }
         public double rating { get; set; }
