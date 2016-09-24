@@ -30,7 +30,7 @@ namespace DCSortment
 
             try
             {
-                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + "inputTest.xlsx");
+                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + "dataset.xlsx");
                 Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
                 Excel.Range xlRange = xlWorksheet.UsedRange;
 
@@ -39,7 +39,6 @@ namespace DCSortment
                 double num;
                 int rowCount = xlRange.Rows.Count;
                 int colCount = xlRange.Columns.Count;
-
 
                 for (int i = 2; i <= rowCount; i++)
                 {
@@ -90,7 +89,7 @@ namespace DCSortment
             catch (COMException)
             {
 
-                Console.WriteLine("\nThe required dataset .xlsx file was not found. Please ensure \"dataset.xlsx\" is in the current directory as the executeable.");
+                Console.WriteLine("\nThe required dataset file was not found. Please ensure \"dataset.xlsx\" is in the current directory as the executeable.");
 
             }
 
@@ -99,56 +98,71 @@ namespace DCSortment
 
             SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
 
-            
-            foreach (House house in SortedHouseList) {
-                Console.WriteLine(house.houseName + " -> " + house.rating);
-            }
-
-
             try
             {
+                //Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
                 fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
                 char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
                 string completedDirectory= currentDirectory + "Files\\";
                 completedDirectory = Regex.Replace(completedDirectory, @"\\",".");
                 
-
-
-
+                //Go through each file name and remove the complete file directory leaving only the name
                 foreach (string filename in fileNames)
                 {
                     string[] splitName = Regex.Split(filename, @completedDirectory);
                     cleanFileNames.Add(splitName[1]);
                 }
 
-
-                foreach (string filename in cleanFileNames)
-                {
-                    Console.WriteLine(filename);
-                }
-
-
-                //sortedHouseList and cleanFileNames
+                //File rename variables
                 House currentHouse;
                 int indexOfHouseFile;
                 string renameName;
+                string[] fileExt;
 
-                currentHouse = SortedHouseList.First();
-                indexOfHouseFile = 
+                //For every house name in the sorted house list thats already in order
+                foreach (House name in SortedHouseList) {                   
+                    {
 
-                if (cleanFileNames[indexOfHouseFile].Contains("_NEW"))
-                {
-                    renameName = _namingUpperPosition + "_" + currentHouse.rating;
-                    incrementNamingConvention(_namingUpperPosition, true);
-                    Console.WriteLine(renameName + " - Next Convetion -> " + _namingUpperPosition);
-                } else
-                {
-                    renameName = _namingLowerPosition + "_" + currentHouse.rating + "_" + "CHNGTAG";
-                    incrementNamingConvention(_namingLowerPosition, false);
-                    Console.WriteLine(renameName + " - Next Convetion -> " + _namingLowerPosition);
-                }
+                        //Find the index of the current file thats in the filelist
+                        currentHouse = name;
+                        indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
+                           
+                        //While the filelist actually has instances of that filename 
+                        while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName))) { 
 
+                            //Make sure theres a real index found
+                            if (indexOfHouseFile != -1)
+                            {
+                                //If the file contains "NEW" and it contains the current house name
+                                if (cleanFileNames[indexOfHouseFile].Contains("NEW") && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                {
+                                    //Determine the appropriate rename name and then rename the file
+                                    renameName = _namingUpperPosition + "_" + currentHouse.rating;
+                                    incrementNamingConvention(_namingUpperPosition, true);
+                                    fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                    File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
 
+                                }
+
+                                //If the file does not contain "NEW" and it contains the current house name
+                                if (!cleanFileNames[indexOfHouseFile].Contains("NEW") && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                {
+
+                                    //Determine the appropriate rename name and then rename the file
+                                    renameName = _namingLowerPosition + "_" + currentHouse.rating + "_" + "CHNGTAG";
+                                    incrementNamingConvention(_namingLowerPosition, false);
+                                    fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                    File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+
+                                }
+
+                                //Once we've found and rename the file we can remove it from the list and then read in the next file
+                                cleanFileNames.RemoveAt(indexOfHouseFile);
+
+                                }
+                            }
+                        }
+                    } 
             }
 
             catch (DirectoryNotFoundException)
@@ -157,17 +171,12 @@ namespace DCSortment
                 Console.WriteLine("\nThe working file directory was not found. Please Ensure that the folder named \"Files\" has been created in the same directory as the program.)");
 
             }
-
-            
-
-
-
-            Console.Read();
+      
         }
 
-        public static string incrementNamingConvention(string theString, bool isUpper)
-        {
-            string incrementedString = null;
+        //Method that controls the naming convention incrementation.
+        public static void incrementNamingConvention(string theString, bool isUpper)
+        {    
             char[] theCharString = theString.ToCharArray();
 
             switch (isUpper)
@@ -177,11 +186,11 @@ namespace DCSortment
 
                     if (((int)theCharString[1] + 1) > 90)
                     {
-                        incrementedString = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                        _namingUpperPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
                     }
                     else
                     {
-                        incrementedString = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                        _namingUpperPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
                     }
                     break;
 
@@ -189,28 +198,28 @@ namespace DCSortment
 
                     if (((int)theCharString[1] + 1) > 122)
                     {
-                        incrementedString = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                        _namingLowerPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
                     }
                     else
                     {
-                        incrementedString = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                        _namingLowerPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
                     }
                     break;
 
 
             }
 
-            return incrementedString;
+           
         }
 
 
     }
 
+    //Class to hold the house name and its corresponding rating.
     public class House{
 
         public string houseName { get; set; }
         public double rating { get; set; }
-
     }
 
 
