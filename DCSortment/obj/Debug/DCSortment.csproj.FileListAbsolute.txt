@@ -1,1 +1,0 @@
-c:\users\otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Debug\DCSortment.exe.config
