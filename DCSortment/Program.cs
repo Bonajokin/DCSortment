@@ -14,10 +14,14 @@ namespace DCSortment
     {
         static string _namingUpperPosition = "AA";
         static string _namingLowerPosition = "aa";
+     
+        
 
         static void Main(string[] args)
         {
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+            string xlFileName;
+            int programMode;
 
             //List Variables
             List<House> houses = new List<House>();
@@ -28,9 +32,29 @@ namespace DCSortment
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
 
+            Console.WriteLine("Welcome to DCSortment \n" );
+
+            ExcelFile:
+            Console.WriteLine("\nPlease enter the name of the excel file you wish to use: ");
+
+            xlFileName = Console.ReadLine();
+
+            SortingFormats:
+            Console.WriteLine("\nSorting Formats:"
+                        + "\n1. By Weighted Alphabetical."
+                        + "\n2. Preordered Dataset."
+                );
+
+            Console.WriteLine("\nPlease select a format: ");
+
+            programMode = Console.Read();
+
+
+
             try
             {
-                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + "dataset.xlsx");
+                string test = currentDirectory + xlFileName + ".xlsx";
+                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + xlFileName + ".xlsx");
                 Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
                 Excel.Range xlRange = xlWorksheet.UsedRange;
 
@@ -90,16 +114,34 @@ namespace DCSortment
             {
 
                 Console.WriteLine("\nThe required dataset file was not found. Please ensure \"dataset.xlsx\" is in the current directory as the executeable.");
-
+                goto ExcelFile;
             }
 
 
             //Sort list
 
-            SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
+            switch (programMode)
+            {
+                case '1':
+
+                    SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
+                    break;
+
+                case '2':
+
+                    SortedHouseList = houses;
+                    break;
+
+               default:
+                    Console.WriteLine("\nYou've entered an invalid sorting format selection.");
+                    goto SortingFormats;
+            }
+
 
             try
             {
+                Console.WriteLine("\nProcess Initiated....");
+
                 //Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
                 fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
                 char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
@@ -162,16 +204,22 @@ namespace DCSortment
                                 }
                             }
                         }
-                    } 
+                    }
+
+                Console.WriteLine("Process Completed!");
+                Console.WriteLine("\nPress any key to exit.");
+                Console.ReadLine();
             }
 
             catch (DirectoryNotFoundException)
             {
 
                 Console.WriteLine("\nThe working file directory was not found. Please Ensure that the folder named \"Files\" has been created in the same directory as the program.)");
-
+                Console.Read();
             }
-      
+
+            Console.ReadLine();
+
         }
 
         //Method that controls the naming convention incrementation.
