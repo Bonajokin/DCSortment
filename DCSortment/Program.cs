@@ -21,11 +21,12 @@ namespace DCSortment
         {
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             string xlFileName;
-            int programMode;
+            int programMode = 0;
+            bool retryFileOpen = true;
 
             //List Variables
             List<House> houses = new List<House>();
-            List<House> SortedHouseList;
+            List<House> SortedHouseList = null;
             List<string> fileNames;
             List<string> cleanFileNames = new List<string>();
 
@@ -34,112 +35,176 @@ namespace DCSortment
 
             Console.WriteLine("Welcome to DCSortment \n" );
 
-            ExcelFile:
             Console.WriteLine("\nPlease enter the name of the excel file you wish to use: ");
 
             xlFileName = Console.ReadLine();
 
-            SortingFormats:
-            Console.WriteLine("\nSorting Formats:"
-                        + "\n1. By Weighted Alphabetical."
-                        + "\n2. Preordered Dataset."
-                );
-
-            Console.WriteLine("\nPlease select a format: ");
-
-            programMode = Console.Read();
-
-
-
-            try
+            while (retryFileOpen)
             {
-                string test = currentDirectory + xlFileName + ".xlsx";
-                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + xlFileName + ".xlsx");
-                Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-                Excel.Range xlRange = xlWorksheet.UsedRange;
-
-                //Reading and storing input dataset
-                string input = "";
-                double num;
-                int rowCount = xlRange.Rows.Count;
-                int colCount = xlRange.Columns.Count;
-
-                for (int i = 2; i <= rowCount; i++)
+                try
                 {
-                    for (int j = 1; j <= colCount; j++)
+                    Excel.Workbook xltestWorkbook = xlApp.Workbooks.Open(currentDirectory + xlFileName + ".xlsx");
+                    retryFileOpen = false;
+                    xltestWorkbook.Close();
+                }
+                catch (COMException)
+                {
+                    Console.WriteLine("\n\nFilename not found.");
+                    Console.WriteLine("\nPlease enter the name of the excel file you wish to use: ");
+                    xlFileName = Console.ReadLine();
+                }
+            }
+
+
+
+            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(currentDirectory + xlFileName + ".xlsx");
+            Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+            Excel.Range xlRange = xlWorksheet.UsedRange;
+
+            //Reading and storing input dataset
+            string input = "";
+            double num;
+            int rowCount = xlRange.Rows.Count;
+            int colCount = xlRange.Columns.Count;
+
+            for (int i = 2; i <= rowCount; i++)
+            {
+                for (int j = 1; j <= colCount; j++)
+                {
+
+
+                    if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
                     {
 
-
-                        if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
+                        //If the current value being parsed is a number
+                        if (double.TryParse(xlRange.Cells[i, j].Value2.ToString(), out num))
                         {
+                            // Make a new House object and set its name and rating, then add it to the list of houses.
+                            House temp = new House();
+                            temp.houseName = input;
+                            temp.rating = num;
+                            houses.Add(temp);
+                        }
 
-                            //If the current value being parsed is a number
-                            if (double.TryParse(xlRange.Cells[i, j].Value2.ToString(), out num))
-                            {
-                                // Make a new House object and set its name and rating, then add it to the list of houses.
-                                House temp = new House();
-                                temp.houseName = input;
-                                temp.rating = num;
-                                houses.Add(temp);
-                            }
-
-                            // If the current value isn't a number then it must be a house name so we store it while we wait for its rating.
-                            else
-                            {
-                                input = xlRange.Cells[i, j].Value2.ToString();
-                            }
+                        // If the current value isn't a number then it must be a house name so we store it while we wait for its rating.
+                        else
+                        {
+                            input = xlRange.Cells[i, j].Value2.ToString();
                         }
                     }
-
-
                 }
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
 
-
-                Marshal.ReleaseComObject(xlRange);
-                Marshal.ReleaseComObject(xlWorksheet);
-
-                xlWorkbook.Close();
-                Marshal.ReleaseComObject(xlWorkbook);
-
-                xlApp.Quit();
-                Marshal.ReleaseComObject(xlApp);
-
-                //End of Reading and storing input
             }
 
-            catch (COMException)
-            {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
-                Console.WriteLine("\nThe required dataset file was not found. Please ensure \"dataset.xlsx\" is in the current directory as the executeable.");
-                goto ExcelFile;
-            }
+
+            Marshal.ReleaseComObject(xlRange);
+            Marshal.ReleaseComObject(xlWorksheet);
+
+            xlWorkbook.Close();
+            Marshal.ReleaseComObject(xlWorkbook);
+
+            xlApp.Quit();
+            Marshal.ReleaseComObject(xlApp);
+
+            //End of Reading and storing input
 
 
             //Sort list
+            bool isValid = false;
+           
+            Console.WriteLine("\n\nSorting Formats:"
+                + "\n1. By Weighted Alphabetical."
+                + "\n2. Preordered Dataset."
+                + "\n3. Exit Program."
+                            );
 
-            switch (programMode)
+
+            // Read input from console ensuring it is an integer
+            bool acceptableNumA = false;
+
+            do
             {
-                case '1':
 
-                    SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
-                    break;
+                Console.WriteLine("\nPlease select a format: ");
 
-                case '2':
+                try
+                {
+                    programMode = Convert.ToInt32(Console.ReadLine());
+                    acceptableNumA = true;
+                }
+                catch (System.FormatException)
+                {
+                    Console.WriteLine("\n\nInvalid input");
+                }
 
-                    SortedHouseList = houses;
-                    break;
+            } while (!acceptableNumA);
+            
+            //Until the user selects a clear format 
+            while (!isValid)
+            {
 
-               default:
-                    Console.WriteLine("\nYou've entered an invalid sorting format selection.");
-                    goto SortingFormats;
+                switch (programMode)
+                {
+       
+                    case 1:
+                        {
+                            SortedHouseList = houses.OrderByDescending(house => house.rating).ThenBy(house => house.houseName).ToList();
+                            isValid = true;
+                            break;
+                        }
+
+                    case 2:
+                        {
+                            SortedHouseList = houses;
+                            isValid = true;
+                            break;
+                        }
+                    case 3:
+                        System.Environment.Exit(1);
+                        break;
+
+                    default:
+                        {
+                            bool acceptableNum = false;
+                            do
+                            {
+
+                                Console.WriteLine("\n\nInvalid input");
+                                Console.WriteLine("\nPlease select a format: ");
+
+                                try
+                                {
+                                    programMode = Convert.ToInt32(Console.ReadLine());
+                                    acceptableNum = true;
+                                }
+                                catch (System.FormatException)
+                                {
+
+                                }
+
+                            } while (!acceptableNum);
+                            break;
+                        }
+                }
+
+            }
+           
+            try
+            {
+                fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+                Console.WriteLine("\nThe working file directory was not found. Please Ensure that the folder named \"Files\" has been created in the same directory as the program.)");
+                Console.Read();
             }
 
 
-            try
-            {
                 Console.WriteLine("\nProcess Initiated....");
 
                 //Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
@@ -209,17 +274,6 @@ namespace DCSortment
                 Console.WriteLine("Process Completed!");
                 Console.WriteLine("\nPress any key to exit.");
                 Console.ReadLine();
-            }
-
-            catch (DirectoryNotFoundException)
-            {
-
-                Console.WriteLine("\nThe working file directory was not found. Please Ensure that the folder named \"Files\" has been created in the same directory as the program.)");
-                Console.Read();
-            }
-
-            Console.ReadLine();
-
         }
 
         //Method that controls the naming convention incrementation.
@@ -231,29 +285,29 @@ namespace DCSortment
             {
 
                 case true:
-
-                    if (((int)theCharString[1] + 1) > 90)
                     {
-                        _namingUpperPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                        if (((int)theCharString[1] + 1) > 90)
+                        {
+                            _namingUpperPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                        }
+                        else
+                        {
+                            _namingUpperPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                        }
+                        break;
                     }
-                    else
-                    {
-                        _namingUpperPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
-                    }
-                    break;
-
                 case false:
-
-                    if (((int)theCharString[1] + 1) > 122)
                     {
-                        _namingLowerPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                        if (((int)theCharString[1] + 1) > 122)
+                        {
+                            _namingLowerPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                        }
+                        else
+                        {
+                            _namingLowerPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                        }
+                        break;
                     }
-                    else
-                    {
-                        _namingLowerPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
-                    }
-                    break;
-
 
             }
 
