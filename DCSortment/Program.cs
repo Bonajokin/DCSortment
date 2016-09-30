@@ -177,8 +177,10 @@ namespace DCSortment
                             break;
                         }
                     case 3:
-                        System.Environment.Exit(1);
-                        break;
+                        {
+                            System.Environment.Exit(1);
+                            break;
+                        }
 
                     default:
                         {
@@ -263,7 +265,7 @@ namespace DCSortment
                                     }
                                     else
                                     {
-                                        renameName = _namingUpperPosition + "_" + currentHouse.rating;
+                                        renameName = _namingUpperPosition + "_" + (currentHouse.rating).ToString("0.00");
                                     }
 
                                     incrementNamingConvention(_namingUpperPosition, true);
@@ -284,8 +286,8 @@ namespace DCSortment
                                     }
                                     else
                                     {
-                                       renameName = _namingLowerPosition + "_" + currentHouse.rating + userChngTag;
-                                    }
+                                        renameName = _namingLowerPosition + "_" + (currentHouse.rating).ToString("0.00") + userChngTag;
+                                     }
 
                                     incrementNamingConvention(_namingLowerPosition, false);
                                     fileExt = cleanFileNames[indexOfHouseFile].Split('.');
