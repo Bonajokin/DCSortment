@@ -263,7 +263,7 @@ namespace DCSortment
                                     }
                                     else
                                     {
-                                        renameName = _namingUpperPosition + "_" + (currentHouse.rating).ToString("0.00");
+                                        renameName = _namingUpperPosition + "_" + currentHouse.rating;
                                     }
 
                                     incrementNamingConvention(_namingUpperPosition, true);
@@ -284,7 +284,7 @@ namespace DCSortment
                                     }
                                     else
                                     {
-                                       renameName = _namingLowerPosition + "_" + (currentHouse.rating).ToString("0.00") + userChngTag;
+                                       renameName = _namingLowerPosition + "_" + currentHouse.rating + userChngTag;
                                     }
 
                                     incrementNamingConvention(_namingLowerPosition, false);
