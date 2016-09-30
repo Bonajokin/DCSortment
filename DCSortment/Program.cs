@@ -21,6 +21,8 @@ namespace DCSortment
         {
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             string xlFileName;
+            string userDefTag;
+            string userChngTag;
             int programMode = 0;
             bool retryFileOpen = true;
 
@@ -82,7 +84,7 @@ namespace DCSortment
                             // Make a new House object and set its name and rating, then add it to the list of houses.
                             House temp = new House();
                             temp.houseName = input;
-                            temp.rating = num;
+                            temp.rating = Double.Parse(num.ToString("0.00"));
                             houses.Add(temp);
                         }
 
@@ -112,6 +114,17 @@ namespace DCSortment
 
             //End of Reading and storing input
 
+            userDefTag = "_";
+            userChngTag = "_";
+
+            Console.WriteLine("\nTag Definitions:");
+            Console.WriteLine("\n\nPlease define your tag definitions without an underscore and case does not matter.");
+
+            Console.WriteLine("\nPlease enter the searching tag: ");
+            userDefTag = userDefTag + Console.ReadLine();
+
+            Console.WriteLine("\nPlease enter the replacing tag: ");
+            userChngTag = userChngTag + Console.ReadLine();
 
             //Sort list
             bool isValid = false;
@@ -241,10 +254,18 @@ namespace DCSortment
                             if (indexOfHouseFile != -1)
                             {
                                 //If the file contains "NEW" and it contains the current house name
-                                if (cleanFileNames[indexOfHouseFile].Contains("NEW") && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
                                 {
-                                    //Determine the appropriate rename name and then rename the file
-                                    renameName = _namingUpperPosition + "_" + currentHouse.rating;
+                                //Determine the appropriate rename name and then rename the file
+                                    if (currentHouse.rating == 0.00)
+                                    {
+                                        renameName = _namingUpperPosition + "_" + "UNKNOWN";
+                                    }
+                                    else
+                                    {
+                                        renameName = _namingUpperPosition + "_" + currentHouse.rating;
+                                    }
+
                                     incrementNamingConvention(_namingUpperPosition, true);
                                     fileExt = cleanFileNames[indexOfHouseFile].Split('.');
                                     File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
@@ -252,11 +273,20 @@ namespace DCSortment
                                 }
 
                                 //If the file does not contain "NEW" and it contains the current house name
-                                if (!cleanFileNames[indexOfHouseFile].Contains("NEW") && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
                                 {
 
                                     //Determine the appropriate rename name and then rename the file
-                                    renameName = _namingLowerPosition + "_" + currentHouse.rating + "_" + "CHNGTAG";
+                                    
+                                    if (currentHouse.rating == 0.00)
+                                    {
+                                        renameName = _namingUpperPosition + "_" + "UNKNOWN"  + userChngTag;
+                                    }
+                                    else
+                                    {
+                                       renameName = _namingLowerPosition + "_" + currentHouse.rating + userChngTag;
+                                    }
+
                                     incrementNamingConvention(_namingLowerPosition, false);
                                     fileExt = cleanFileNames[indexOfHouseFile].Split('.');
                                     File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
@@ -322,6 +352,15 @@ namespace DCSortment
 
         public string houseName { get; set; }
         public double rating { get; set; }
+    }
+
+    public static class Extensions
+    {
+        public static bool CaseInsensitiveContains(this string text, string value,
+            StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
+        {
+            return text.IndexOf(value, stringComparison) >= 0;
+        }
     }
 
 
