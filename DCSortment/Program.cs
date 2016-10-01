@@ -245,6 +245,15 @@ namespace DCSortment
                 foreach (House name in SortedHouseList) {                   
                     {
 
+                        //
+                        List<string> renameNames = new List<string>();
+                        List<string> cleanFileNameCopy = cleanFileNames.ToList();
+                        List<string> FinalFileNames = cleanFileNames.ToList();
+                        Dictionary<string, int> houseIndex = new Dictionary<string, int>();
+                        int i = 0;
+
+                        SortedHouseList.ForEach(x => houseIndex.Add(x.houseName, i++));
+
                         //Find the index of the current file thats in the filelist
                         currentHouse = name;
                         indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
