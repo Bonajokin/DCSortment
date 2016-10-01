@@ -317,8 +317,10 @@ namespace DCSortment
                 Console.ReadLine();
         }
 
-        //Method that controls the naming convention incrementation.
-        public static void incrementNamingConvention(string theString, bool isUpper)
+
+        //Method that controls the naming convention incrementation
+        public static string incrementNamingConvention(string theString, bool isUpper)
+
         {    
             char[] theCharString = theString.ToCharArray();
 
@@ -352,7 +354,7 @@ namespace DCSortment
 
             }
 
-           
+            return null;
         }
 
 
