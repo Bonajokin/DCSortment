@@ -13,10 +13,9 @@ namespace DCSortment
     class Program
     {
         static string _namingUpperPosition = "AA";
-        static string _namingUpperPositionR2 = "AA";
         static string _namingLowerPosition = "aa";
-        static string _namingLowerPositionR2 = "aa";
-
+     
+        
 
         static void Main(string[] args)
         {
@@ -25,12 +24,10 @@ namespace DCSortment
             string userDefTag;
             string userChngTag;
             int programMode = 0;
-            bool doubleRatingMode = false;
             bool retryFileOpen = true;
 
             //List Variables
             List<House> houses = new List<House>();
-            List<House> secondRatingList = new List<House>();
             List<House> SortedHouseList = null;
             List<string> fileNames;
             List<string> cleanFileNames = new List<string>();
@@ -38,7 +35,7 @@ namespace DCSortment
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
 
-            Console.WriteLine("Welcome to DCSortment \n");
+            Console.WriteLine("Welcome to DCSortment \n" );
 
             Console.WriteLine("\nPlease enter the name of the excel file you wish to use: ");
 
@@ -74,8 +71,6 @@ namespace DCSortment
 
             for (int i = 2; i <= rowCount; i++)
             {
-                House temp = new House();
-
                 for (int j = 1; j <= colCount; j++)
                 {
 
@@ -87,22 +82,19 @@ namespace DCSortment
                         if (double.TryParse(xlRange.Cells[i, j].Value2.ToString(), out num))
                         {
                             // Make a new House object and set its name and rating, then add it to the list of houses.
-                            temp.rating.Add(Double.Parse(num.ToString("0.00")));
-                            
+                            House temp = new House();
+                            temp.houseName = input;
+                            temp.rating = Double.Parse(num.ToString("0.00"));
+                            houses.Add(temp);
                         }
 
                         // If the current value isn't a number then it must be a house name so we store it while we wait for its rating.
                         else
                         {
                             input = xlRange.Cells[i, j].Value2.ToString();
-                            temp.houseName = input;
                         }
-
                     }
-
                 }
-
-                houses.Add(temp);
 
 
             }
@@ -122,20 +114,17 @@ namespace DCSortment
 
             //End of Reading and storing input
 
-
-            
-            
+            userDefTag = "_";
+            userChngTag = "_";
 
             Console.WriteLine("\nTag Definitions:");
-            Console.WriteLine("\n\nPlease define your tag definitions without an underscore and case does not matter." +
-                              "\n\nIf you are planning on using double ratings mode!\n\"Searching Tag\" = Rating 1 prefix\n\"Replacing Tag\" = Rating 2 prefix"
-                );
+            Console.WriteLine("\n\nPlease define your tag definitions without an underscore and case does not matter.");
 
             Console.WriteLine("\nPlease enter the searching tag: ");
-            userDefTag = Console.ReadLine();
+            userDefTag = userDefTag + Console.ReadLine();
 
             Console.WriteLine("\nPlease enter the replacing tag: ");
-            userChngTag = Console.ReadLine();
+            userChngTag = userChngTag + Console.ReadLine();
 
             //Sort list
             bool isValid = false;
@@ -143,8 +132,7 @@ namespace DCSortment
             Console.WriteLine("\n\nSorting Formats:"
                 + "\n1. By Weighted Alphabetical."
                 + "\n2. Preordered Dataset."
-                + "\n3. Double Rating."
-                + "\n4. Exit Program."
+                + "\n3. Exit Program."
                             );
 
 
@@ -188,16 +176,7 @@ namespace DCSortment
                             isValid = true;
                             break;
                         }
-
                     case 3:
-                        {
-                            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
-                            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
-                            isValid = true;
-                            doubleRatingMode = true; 
-                            break;
-                        }
-                    case 4:
                         {
                             System.Environment.Exit(1);
                             break;
@@ -262,198 +241,67 @@ namespace DCSortment
                 string renameName;
                 string[] fileExt;
 
-
-            switch (doubleRatingMode)
-            {
-                case true:
+                //For every house name in the sorted house list thats already in order
+                foreach (House name in SortedHouseList) {                   
                     {
-                        List<string> renameNames = new List<string>();
-                        List<string> cleanFileNameCopy = cleanFileNames.ToList();
-                        List<string> FinalFileNames = cleanFileNames.ToList();
-                        Dictionary<string, int> houseIndex = new Dictionary<string, int>();
-                        int i = 0;
 
-                        SortedHouseList.ForEach(x => houseIndex.Add(x.houseName, i++));
-
-                        //For every house name in the sorted house list thats already in order
-                        foreach (House name in SortedHouseList)
-                        {
-
-                            {
-
-                                //Find the index of the current file thats in the filelist
-                                currentHouse = name;
-                                indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
-
-                                //While the filelist actually has instances of that filename 
-                                while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName)))
-                                {
-
-                                    //Make sure theres a real index found
-                                    if (indexOfHouseFile != -1)
-                                    {
-                                        //If the file contains "NEW" and it contains the current house name
-                                        if (cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = userDefTag + _namingUpperPosition + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameName = userDefTag + _namingUpperPosition + "_" + currentHouse.rating[0].ToString("0.00");
-                                            }
-
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            renameNames.Add(renameName);
-                                        }
-
-
-                                        //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                        cleanFileNames.RemoveAt(indexOfHouseFile);
-
-                                    }
-                                }
-                            }
-
-
-                            {
-
-                                //Find the index of the current file thats in the filelist
-                                currentHouse = name;
-                                indexOfHouseFile = cleanFileNameCopy.FindIndex(x => x.Contains(currentHouse.houseName));
-
-                                //While the filelist actually has instances of that filename 
-                                while (cleanFileNameCopy.Exists(x => x.Contains(currentHouse.houseName)))
-                                {
-
-                                    //Make sure theres a real index found
-                                    if (indexOfHouseFile != -1)
-                                    {
-                                        //If the file contains "NEW" and it contains the current house name
-                                        if (cleanFileNameCopy[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[1] == 0.00)
-                                            {
-                                                renameNames[houseIndex[currentHouse.houseName]] = renameNames[houseIndex[currentHouse.houseName]] + "_" + userChngTag + _namingUpperPositionR2 + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameNames[houseIndex[currentHouse.houseName]] = renameNames[houseIndex[currentHouse.houseName]] + "_" + userChngTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
-                                            }
-
-                                            _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
-                                        }
-
-
-                                        //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                        cleanFileNameCopy.RemoveAt(indexOfHouseFile);
-
-                                    }
-                                }
-                            }
-
-                        }
-
+                        //Find the index of the current file thats in the filelist
+                        currentHouse = name;
+                        indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
                            
+                        //While the filelist actually has instances of that filename 
+                        while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName))) { 
 
-                        
-
-                        foreach(House name in SortedHouseList)
-                        {
-                            currentHouse = name;
-                            indexOfHouseFile = FinalFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
-
-
-                            while (FinalFileNames.Exists(x => x.Contains(currentHouse.houseName)))
+                            //Make sure theres a real index found
+                            if (indexOfHouseFile != -1)
                             {
-                                fileExt = FinalFileNames[indexOfHouseFile].Split('.');
+                                //If the file contains "NEW" and it contains the current house name
+                                if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                {
+                                //Determine the appropriate rename name and then rename the file
+                                    if (currentHouse.rating == 0.00)
+                                    {
+                                        renameName = _namingUpperPosition + "_" + "UNKNOWN";
+                                    }
+                                    else
+                                    {
+                                        renameName = _namingUpperPosition + "_" + (currentHouse.rating).ToString("0.00");
+                                    }
 
-                                File.Move(currentDirectory + "Files\\" + FinalFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameNames[houseIndex[currentHouse.houseName]] + "." + fileExt[1]);
+                                    incrementNamingConvention(_namingUpperPosition, true);
+                                    fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                    File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+
+                                }
+
+                                //If the file does not contain "NEW" and it contains the current house name
+                                if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                {
+
+                                    //Determine the appropriate rename name and then rename the file
+                                    
+                                    if (currentHouse.rating == 0.00)
+                                    {
+                                        renameName = _namingUpperPosition + "_" + "UNKNOWN"  + userChngTag;
+                                    }
+                                    else
+                                    {
+                                        renameName = _namingLowerPosition + "_" + (currentHouse.rating).ToString("0.00") + userChngTag;
+                                     }
+
+                                    incrementNamingConvention(_namingLowerPosition, false);
+                                    fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                    File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+
+                                }
 
                                 //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                FinalFileNames.RemoveAt(indexOfHouseFile);
-                            }
-                         }
+                                cleanFileNames.RemoveAt(indexOfHouseFile);
 
-
-                        break;
-                    }
-                case false:
-                    {
-                        userDefTag.Insert(0, "_");
-                        userChngTag.Insert(0, "_");
-
-                        //For every house name in the sorted house list thats already in order
-                        foreach (House name in SortedHouseList)
-                        {
-                            {
-
-                                //Find the index of the current file thats in the filelist
-                                currentHouse = name;
-                                indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
-
-                                //While the filelist actually has instances of that filename 
-                                while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName)))
-                                {
-
-                                    //Make sure theres a real index found
-                                    if (indexOfHouseFile != -1)
-                                    {
-                                        //If the file contains "NEW" and it contains the current house name
-                                        if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingUpperPosition + "_" + (currentHouse.rating[0]).ToString("0.00");
-                                            }
-
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
-
-                                        }
-
-                                        //If the file does not contain "NEW" and it contains the current house name
-                                        if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-
-                                            //Determine the appropriate rename name and then rename the file
-
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN" + userChngTag;
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingLowerPosition + "_" + (currentHouse.rating[0]).ToString("0.00") + userChngTag;
-                                            }
-
-                                            _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
-
-                                        }
-
-                                        //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                        cleanFileNames.RemoveAt(indexOfHouseFile);
-
-                                    }
                                 }
                             }
                         }
-
-                        break;
                     }
-            }
-                    
 
                 Console.WriteLine("Process Completed!");
                 Console.WriteLine("\nPress any key to exit.");
@@ -461,7 +309,7 @@ namespace DCSortment
         }
 
         //Method that controls the naming convention incrementation.
-        public static string incrementNamingConvention(string theString, bool isUpper)
+        public static void incrementNamingConvention(string theString, bool isUpper)
         {    
             char[] theCharString = theString.ToCharArray();
 
@@ -472,65 +320,58 @@ namespace DCSortment
                     {
                         if (((int)theCharString[1] + 1) > 90)
                         {
-                            return ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                            _namingUpperPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
                         }
                         else
                         {
-                           return  theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                            _namingUpperPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
                         }
-
+                        break;
                     }
                 case false:
                     {
                         if (((int)theCharString[1] + 1) > 122)
                         {
-                            return ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                            _namingLowerPosition = ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
                         }
                         else
                         {
-                           return theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                            _namingLowerPosition = theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
                         }
-
+                        break;
                     }
 
             }
 
-            return null;
-  
+           
         }
-
- 
-        }
-
-        //Class to hold the house name and its corresponding rating.
-        public class House
-        {
-
-            public string houseName { get; set; }
-            public List<double> rating = new List<double>();
-            
-
-        }
-
-
-        public static class Extensions
-        {
-            public static bool CaseInsensitiveContains(this string text, string value,
-                StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
-            {
-                return text.IndexOf(value, stringComparison) >= 0;
-            }
-        }
-
 
 
     }
 
+    //Class to hold the house name and its corresponding rating.
+    public class House{
+
+        public string houseName { get; set; }
+        public double rating { get; set; }
+    }
+
+    public static class Extensions
+    {
+        public static bool CaseInsensitiveContains(this string text, string value,
+            StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
+        {
+            return text.IndexOf(value, stringComparison) >= 0;
+        }
+    }
+
+
+
+}
 
 
 
 
 
 
-
-
+  
