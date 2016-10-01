@@ -461,7 +461,7 @@ namespace DCSortment
                 Console.ReadLine();
         }
 
-        //Method that controls the naming convention incrementation.
+        //Method that controls the naming convention incrementation
         public static string incrementNamingConvention(string theString, bool isUpper)
         {    
             char[] theCharString = theString.ToCharArray();
