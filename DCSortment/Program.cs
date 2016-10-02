@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace DCSortment
@@ -17,9 +18,16 @@ namespace DCSortment
         static string _namingLowerPosition = "aa";
         static string _namingLowerPositionR2 = "aa";
 
-
+        [STAThread]
         static void Main(string[] args)
         {
+
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new GUI());
+
+
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             string xlFileName;
             string userDefTag;
