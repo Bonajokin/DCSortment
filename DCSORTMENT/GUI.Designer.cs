@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GUI));
             this.spreadsheetText = new System.Windows.Forms.Label();
             this.xLSpreadsheetLocation = new System.Windows.Forms.TextBox();
             this.browseButton = new System.Windows.Forms.Button();
@@ -42,7 +43,7 @@
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.opStatusName = new System.Windows.Forms.ToolStripStatusLabel();
             this.opProgress = new System.Windows.Forms.ToolStripProgressBar();
-            this.label5 = new System.Windows.Forms.Label();
+            this.sortModeLabel = new System.Windows.Forms.Label();
             this.sortmentStatus = new System.Windows.Forms.Label();
             this.statusBar.SuspendLayout();
             this.SuspendLayout();
@@ -169,14 +170,14 @@
             this.opProgress.Name = "opProgress";
             this.opProgress.Size = new System.Drawing.Size(100, 16);
             // 
-            // label5
+            // sortModeLabel
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(378, 184);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(82, 13);
-            this.label5.TabIndex = 12;
-            this.label5.Text = "Sortment Mode:";
+            this.sortModeLabel.AutoSize = true;
+            this.sortModeLabel.Location = new System.Drawing.Point(378, 184);
+            this.sortModeLabel.Name = "sortModeLabel";
+            this.sortModeLabel.Size = new System.Drawing.Size(82, 13);
+            this.sortModeLabel.TabIndex = 12;
+            this.sortModeLabel.Text = "Sortment Mode:";
             // 
             // sortmentStatus
             // 
@@ -192,7 +193,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(616, 201);
             this.Controls.Add(this.sortmentStatus);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.sortModeLabel);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.run);
             this.Controls.Add(this.replacingTag);
@@ -205,6 +206,8 @@
             this.Controls.Add(this.browseButton);
             this.Controls.Add(this.xLSpreadsheetLocation);
             this.Controls.Add(this.spreadsheetText);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GUI";
             this.Text = "DCSortment";
             this.Load += new System.EventHandler(this.GUI_Load);
@@ -231,7 +234,7 @@
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripStatusLabel opStatusName;
         private System.Windows.Forms.ToolStripProgressBar opProgress;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label sortModeLabel;
         private System.Windows.Forms.Label sortmentStatus;
     }
 }

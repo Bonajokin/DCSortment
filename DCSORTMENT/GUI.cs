@@ -25,7 +25,8 @@ namespace DCSortment
         string _namingLowerPositionR2 = "aa";
 
         bool doubleRatingMode;
-        bool doubleRatingEnabled = true;
+        bool doubleRatingEnabled;
+        bool standardModeEnabled;
 
         //List Variables
         List<House> houses = new List<House>();
@@ -43,6 +44,7 @@ namespace DCSortment
         private void GUI_Load(object sender, EventArgs e)
         {
             opProgress.Visible = false;
+            sortModeLabel.Visible = false;
         }
 
 
@@ -119,10 +121,18 @@ namespace DCSortment
                         _namingUpperPositionR2 = "AA";
                         _namingLowerPosition = "aa";
                         _namingLowerPositionR2 = "aa";
+                        if (standardModeEnabled)
+                        {
+                            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+                            sortModeLabel.Visible = true;
+                            doubleRatingMode = false;
+                            sortmentStatus.Text = "Weighted Alphabet";
+                        }
+                        else
+                        {
+                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                        }
 
-                        SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
-                        doubleRatingMode = false;
-                        sortmentStatus.Text = "Weighted Alphabet";
                         break;
                     }
 
@@ -133,19 +143,32 @@ namespace DCSortment
                         _namingLowerPosition = "aa";
                         _namingLowerPositionR2 = "aa";
 
-                        SortedHouseList = houses;
-                        doubleRatingMode = false;
-                        sortmentStatus.Text = "Preordered Dataset";
+                        if (standardModeEnabled)
+                        {
+                            SortedHouseList = houses;
+                            sortModeLabel.Visible = true;
+                            doubleRatingMode = false;
+                            sortmentStatus.Text = "Preordered Dataset";
+                        } else
+                        {
+                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                        }
+
                         break;
                     }
 
                 case 2:
                     {
+                        _namingUpperPosition = "AA";
+                        _namingUpperPositionR2 = "AA";
+                        _namingLowerPosition = "aa";
+                        _namingLowerPositionR2 = "aa";
 
                         if (doubleRatingEnabled)
                         {
                             SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
                             secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
+                            sortModeLabel.Visible = true;
                             doubleRatingMode = true;
                             sortmentStatus.Text = "Double Rating";
 
@@ -265,7 +288,7 @@ namespace DCSortment
             {
                 case true:
                     {
-                        
+
 
                         List<string> renameNames = new List<string>();
                         List<string> cleanFileNameCopy = cleanFileNames.ToList();
@@ -278,7 +301,7 @@ namespace DCSortment
                         decimal currentWorkCompleted = 0;
 
 
-                       
+
 
                         //Dictionary Stuff
                         Dictionary<string, int> houseIndex = new Dictionary<string, int>();
@@ -335,8 +358,10 @@ namespace DCSortment
                                     }
                                 }
                             }
+                        }
 
-
+                        foreach (House name in secondRatingList)
+                        {
                             {
 
                                 //Find the index of the current file thats in the filelist
@@ -382,6 +407,8 @@ namespace DCSortment
 
                         }
 
+                    
+            
 
 
 
@@ -556,10 +583,16 @@ namespace DCSortment
             decimal increasingPercent = totalEntries * (decimal)0.10;
             decimal currentWorkCompleted = 0;
             doubleRatingEnabled = true;
+            standardModeEnabled = true;
 
             if (colCount < 3)
             {
                 doubleRatingEnabled = false;
+                standardModeEnabled = true;
+            } else if (colCount == 3)
+            {
+                doubleRatingEnabled = true;
+                standardModeEnabled = false;
             }
 
             for (int i = 2; i <= rowCount; i++)
