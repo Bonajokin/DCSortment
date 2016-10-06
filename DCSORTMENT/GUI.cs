@@ -47,6 +47,15 @@ namespace DCSortment
             sortModeLabel.Visible = false;
         }
 
+        private void fileBrowse_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            System.Windows.Forms.DialogResult dr = fbd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                filesLocation.Text = fbd.SelectedPath;
+            }
+        }
 
         private void browseButton_Click(object sender, EventArgs e)
         {
@@ -86,7 +95,7 @@ namespace DCSortment
             opStatusName.Text = "Renaming Files: ";
             try
             {
-                fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
+                fileNames = Directory.GetFiles(filesLocation.Text).ToList();
                 BackgroundWorker w = new BackgroundWorker();
                 w.WorkerSupportsCancellation = true;
                 w.WorkerReportsProgress = true;
@@ -265,10 +274,9 @@ namespace DCSortment
             BackgroundWorker worker = sender as BackgroundWorker;
 
             // Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
-            fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
-            char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
-            string completedDirectory = currentDirectory + "Files\\";
-            completedDirectory = Regex.Replace(completedDirectory, @"\\", ".");
+            fileNames = Directory.GetFiles(filesLocation.Text).ToList();
+            string completedDirectory = filesLocation.Text;
+            completedDirectory = Regex.Replace(filesLocation.Text, @"\\", ".") + "\\\\" ;
 
             //Go through each file name and remove the complete file directory leaving only the name
             foreach (string filename in fileNames)
@@ -423,7 +431,7 @@ namespace DCSortment
                             {
                                 fileExt = FinalFileNames[indexOfHouseFile].Split('.');
 
-                                File.Move(currentDirectory + "Files\\" + FinalFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameNames[houseIndex[currentHouse.houseName]] + "." + fileExt[1]);
+                                File.Move(filesLocation.Text + "\\" + FinalFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameNames[houseIndex[currentHouse.houseName]] + "." + fileExt[1]);
 
                                 //Once we've found and rename the file we can remove it from the list and then read in the next file
                                 FinalFileNames.RemoveAt(indexOfHouseFile);
@@ -484,7 +492,8 @@ namespace DCSortment
 
                                             _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
                                             fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+                                            string test = filesLocation + cleanFileNames[indexOfHouseFile];
+                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
 
                                             currentWorkCompleted += increasingPercent;
                                             if (((currentWorkCompleted / totalEntries) * 100) <= 100)
@@ -510,7 +519,8 @@ namespace DCSortment
 
                                             _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
                                             fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+                                            string test = filesLocation.Text + renameName + "." + fileExt[1];
+                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
 
                                         }
 
@@ -655,8 +665,6 @@ namespace DCSortment
             Marshal.ReleaseComObject(xlApp);
 
         }
-
-      
     }
 
     //Class to hold the house name and its corresponding rating.
