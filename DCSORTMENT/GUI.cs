@@ -154,7 +154,7 @@ namespace DCSortment
             _namingUpperPosition = "AA";
             _namingUpperPositionR2 = "AA";
             _namingLowerPosition = "aa";
-            _namingLowerPositionR2 = "aa";
+            
 
        
             SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
@@ -182,7 +182,7 @@ namespace DCSortment
                             _namingUpperPosition = "AA";
                             _namingUpperPositionR2 = "AA";
                             _namingLowerPosition = "aa";
-                            _namingLowerPositionR2 = "aa";
+                           
                            
                           
                             SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
@@ -198,7 +198,7 @@ namespace DCSortment
                             _namingUpperPosition = "AA";
                             _namingUpperPositionR2 = "AA";
                             _namingLowerPosition = "aa";
-                            _namingLowerPositionR2 = "aa";
+                          
 
                           
                             SortedHouseList = houses;
