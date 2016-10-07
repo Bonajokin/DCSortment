@@ -16,7 +16,7 @@ namespace DCSortment
 {
     public partial class GUI : Form
     {
-        string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+        string dataSetName;
         string userDefTag;
         string userChngTag;
         string _namingUpperPosition = "AA";
@@ -45,6 +45,12 @@ namespace DCSortment
         {
             opProgress.Visible = false;
             sortModeLabel.Visible = false;
+            doubleRatingLB.Visible = false;
+            doubleRatingLB.Enabled = false;
+            sortingMethods.Visible = false;
+            sortingMethods.Enabled = false;
+
+
         }
 
         private void fileBrowse_Click(object sender, EventArgs e)
@@ -62,9 +68,9 @@ namespace DCSortment
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Microsoft Excel Spreedsheet File (.xlsx)| *.xlsx";
             System.Windows.Forms.DialogResult dr = ofd.ShowDialog();
+            dataSetName = ofd.FileName;
             if (dr == DialogResult.OK)
             {
-                xLSpreadsheetLocation.Text = ofd.FileName;
                 opStatusName.Text = "Parsing Spreadsheet: ";
 
                 BackgroundWorker w = new BackgroundWorker();
@@ -74,6 +80,7 @@ namespace DCSortment
                 w.ProgressChanged += XlSSworker_ProgressChanged;
                 w.RunWorkerCompleted += XlSSworker_RunWorkerCompleted;
                 w.RunWorkerAsync();
+               
             }
 
        
@@ -114,83 +121,96 @@ namespace DCSortment
 
         }
 
+        private void xLSpreadsheetLocation_TextChanged(object sender, EventArgs e)
+        {
+            if (standardModeEnabled)
+            {
+                doubleRatingLB.Visible = false;
+                doubleRatingLB.Enabled = false;
+                sortingMethods.Visible = true;
+                sortingMethods.Enabled = true;
+                initialLB.Visible = false;
+                initialLB.Enabled = false;
+                sortmentStatus.Visible = false;
+                sortModeLabel.Visible = false;
+
+            }
+            else {
+
+                doubleRatingLB.Visible = true;
+                doubleRatingLB.Enabled = true;
+                sortingMethods.Visible = false;
+                sortingMethods.Enabled = false;
+                initialLB.Visible = false;
+                initialLB.Enabled = false;
+                sortmentStatus.Visible = false;
+                sortModeLabel.Visible = false;
+
+            }
+        }
+
+        private void doubleRatingLB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _namingUpperPosition = "AA";
+            _namingUpperPositionR2 = "AA";
+            _namingLowerPosition = "aa";
+            _namingLowerPositionR2 = "aa";
+
+       
+            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
+            sortModeLabel.Visible = true;
+            sortmentStatus.Visible = true;
+            doubleRatingMode = true;
+            sortmentStatus.Text = "Double Rating";
+
+        }
+
 
         private void sortingMethods_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-          
-
-            switch (sortingMethods.SelectedIndex)
+            if (!doubleRatingEnabled)
             {
 
-                case 0:
-                    {
+                switch (sortingMethods.SelectedIndex)
+                {
 
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-                        if (standardModeEnabled)
+                    case 0:
                         {
+
+                            _namingUpperPosition = "AA";
+                            _namingUpperPositionR2 = "AA";
+                            _namingLowerPosition = "aa";
+                            _namingLowerPositionR2 = "aa";
+                           
+                          
                             SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
                             sortModeLabel.Visible = true;
+                            sortmentStatus.Visible = true;
                             doubleRatingMode = false;
                             sortmentStatus.Text = "Weighted Alphabet";
-                        }
-                        else
-                        {
-                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                            break;
                         }
 
-                        break;
-                    }
-
-                case 1:
-                    {
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-
-                        if (standardModeEnabled)
+                    case 1:
                         {
+                            _namingUpperPosition = "AA";
+                            _namingUpperPositionR2 = "AA";
+                            _namingLowerPosition = "aa";
+                            _namingLowerPositionR2 = "aa";
+
+                          
                             SortedHouseList = houses;
                             sortModeLabel.Visible = true;
+                            sortmentStatus.Visible = true;
                             doubleRatingMode = false;
                             sortmentStatus.Text = "Preordered Dataset";
-                        } else
-                        {
-                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                            break;
                         }
 
-                        break;
-                    }
-
-                case 2:
-                    {
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-
-                        if (doubleRatingEnabled)
-                        {
-                            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
-                            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
-                            sortModeLabel.Visible = true;
-                            doubleRatingMode = true;
-                            sortmentStatus.Text = "Double Rating";
-
-                        }
-                        else
-                        {
-                            MessageBox.Show("Error: Double Rating mode not supported by this dataset.");
-                        }
-                        break;
-                    }
-            }
-
-
+                }
+            } 
 
 
 
@@ -561,7 +581,7 @@ namespace DCSortment
             else
             {
                 opStatusName.Text += "Done!";
-
+                xLSpreadsheetLocation.Text = dataSetName;
             }
         }
 
@@ -580,7 +600,7 @@ namespace DCSortment
 
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(xLSpreadsheetLocation.Text);
+            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(dataSetName);
             Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
             Excel.Range xlRange = xlWorksheet.UsedRange;
 
@@ -592,8 +612,6 @@ namespace DCSortment
             int totalEntries = (rowCount * colCount) - 2;
             decimal increasingPercent = totalEntries * (decimal)0.10;
             decimal currentWorkCompleted = 0;
-            doubleRatingEnabled = true;
-            standardModeEnabled = true;
 
             if (colCount < 3)
             {
@@ -665,6 +683,8 @@ namespace DCSortment
             Marshal.ReleaseComObject(xlApp);
 
         }
+
+        
     }
 
     //Class to hold the house name and its corresponding rating.

@@ -48,6 +48,8 @@
             this.filesLocation = new System.Windows.Forms.TextBox();
             this.fileLocationLabel = new System.Windows.Forms.Label();
             this.fileBrowse = new System.Windows.Forms.Button();
+            this.doubleRatingLB = new System.Windows.Forms.ListBox();
+            this.initialLB = new System.Windows.Forms.ListBox();
             this.statusBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -66,6 +68,7 @@
             this.xLSpreadsheetLocation.Name = "xLSpreadsheetLocation";
             this.xLSpreadsheetLocation.Size = new System.Drawing.Size(581, 20);
             this.xLSpreadsheetLocation.TabIndex = 1;
+            this.xLSpreadsheetLocation.TextChanged += new System.EventHandler(this.xLSpreadsheetLocation_TextChanged);
             // 
             // browseButton
             // 
@@ -91,8 +94,7 @@
             this.sortingMethods.FormattingEnabled = true;
             this.sortingMethods.Items.AddRange(new object[] {
             "Weighted Alphabet",
-            "Preordered Dataset",
-            "Double Rating"});
+            "Preordered Dataset"});
             this.sortingMethods.Location = new System.Drawing.Point(19, 133);
             this.sortingMethods.Name = "sortingMethods";
             this.sortingMethods.Size = new System.Drawing.Size(124, 82);
@@ -216,11 +218,32 @@
             this.fileBrowse.UseVisualStyleBackColor = true;
             this.fileBrowse.Click += new System.EventHandler(this.fileBrowse_Click);
             // 
+            // doubleRatingLB
+            // 
+            this.doubleRatingLB.FormattingEnabled = true;
+            this.doubleRatingLB.Items.AddRange(new object[] {
+            "Double Rating"});
+            this.doubleRatingLB.Location = new System.Drawing.Point(19, 132);
+            this.doubleRatingLB.Name = "doubleRatingLB";
+            this.doubleRatingLB.Size = new System.Drawing.Size(124, 82);
+            this.doubleRatingLB.TabIndex = 17;
+            this.doubleRatingLB.SelectedIndexChanged += new System.EventHandler(this.doubleRatingLB_SelectedIndexChanged);
+            // 
+            // initialLB
+            // 
+            this.initialLB.FormattingEnabled = true;
+            this.initialLB.Location = new System.Drawing.Point(19, 132);
+            this.initialLB.Name = "initialLB";
+            this.initialLB.Size = new System.Drawing.Size(124, 82);
+            this.initialLB.TabIndex = 18;
+            // 
             // GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(611, 249);
+            this.Controls.Add(this.initialLB);
+            this.Controls.Add(this.doubleRatingLB);
             this.Controls.Add(this.fileBrowse);
             this.Controls.Add(this.filesLocation);
             this.Controls.Add(this.fileLocationLabel);
@@ -272,5 +295,7 @@
         private System.Windows.Forms.TextBox filesLocation;
         private System.Windows.Forms.Label fileLocationLabel;
         private System.Windows.Forms.Button fileBrowse;
+        private System.Windows.Forms.ListBox doubleRatingLB;
+        private System.Windows.Forms.ListBox initialLB;
     }
 }
