@@ -22,7 +22,7 @@ namespace DCSortment
         string _namingUpperPosition = "AA";
         string _namingUpperPositionR2 = "AA";
         string _namingLowerPosition = "aa";
-        string _namingLowerPositionR2 = "aa";
+        
 
         bool doubleRatingMode;
         bool doubleRatingEnabled;
