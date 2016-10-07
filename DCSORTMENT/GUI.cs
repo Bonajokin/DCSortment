@@ -16,13 +16,13 @@ namespace DCSortment
 {
     public partial class GUI : Form
     {
-        string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+        string dataSetName;
         string userDefTag;
         string userChngTag;
         string _namingUpperPosition = "AA";
         string _namingUpperPositionR2 = "AA";
         string _namingLowerPosition = "aa";
-        string _namingLowerPositionR2 = "aa";
+        
 
         bool doubleRatingMode;
         bool doubleRatingEnabled;
@@ -45,17 +45,32 @@ namespace DCSortment
         {
             opProgress.Visible = false;
             sortModeLabel.Visible = false;
+            doubleRatingLB.Visible = false;
+            doubleRatingLB.Enabled = false;
+            sortingMethods.Visible = false;
+            sortingMethods.Enabled = false;
+
+
         }
 
+        private void fileBrowse_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            System.Windows.Forms.DialogResult dr = fbd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                filesLocation.Text = fbd.SelectedPath;
+            }
+        }
 
         private void browseButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Microsoft Excel Spreedsheet File (.xlsx)| *.xlsx";
             System.Windows.Forms.DialogResult dr = ofd.ShowDialog();
+            dataSetName = ofd.FileName;
             if (dr == DialogResult.OK)
             {
-                xLSpreadsheetLocation.Text = ofd.FileName;
                 opStatusName.Text = "Parsing Spreadsheet: ";
 
                 BackgroundWorker w = new BackgroundWorker();
@@ -65,6 +80,7 @@ namespace DCSortment
                 w.ProgressChanged += XlSSworker_ProgressChanged;
                 w.RunWorkerCompleted += XlSSworker_RunWorkerCompleted;
                 w.RunWorkerAsync();
+               
             }
 
        
@@ -86,7 +102,7 @@ namespace DCSortment
             opStatusName.Text = "Renaming Files: ";
             try
             {
-                fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
+                fileNames = Directory.GetFiles(filesLocation.Text).ToList();
                 BackgroundWorker w = new BackgroundWorker();
                 w.WorkerSupportsCancellation = true;
                 w.WorkerReportsProgress = true;
@@ -105,83 +121,96 @@ namespace DCSortment
 
         }
 
+        private void xLSpreadsheetLocation_TextChanged(object sender, EventArgs e)
+        {
+            if (standardModeEnabled)
+            {
+                doubleRatingLB.Visible = false;
+                doubleRatingLB.Enabled = false;
+                sortingMethods.Visible = true;
+                sortingMethods.Enabled = true;
+                initialLB.Visible = false;
+                initialLB.Enabled = false;
+                sortmentStatus.Visible = false;
+                sortModeLabel.Visible = false;
+
+            }
+            else {
+
+                doubleRatingLB.Visible = true;
+                doubleRatingLB.Enabled = true;
+                sortingMethods.Visible = false;
+                sortingMethods.Enabled = false;
+                initialLB.Visible = false;
+                initialLB.Enabled = false;
+                sortmentStatus.Visible = false;
+                sortModeLabel.Visible = false;
+
+            }
+        }
+
+        private void doubleRatingLB_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _namingUpperPosition = "AA";
+            _namingUpperPositionR2 = "AA";
+            _namingLowerPosition = "aa";
+            
+
+       
+            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
+            sortModeLabel.Visible = true;
+            sortmentStatus.Visible = true;
+            doubleRatingMode = true;
+            sortmentStatus.Text = "Double Rating";
+
+        }
+
 
         private void sortingMethods_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-          
-
-            switch (sortingMethods.SelectedIndex)
+            if (!doubleRatingEnabled)
             {
 
-                case 0:
-                    {
+                switch (sortingMethods.SelectedIndex)
+                {
 
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-                        if (standardModeEnabled)
+                    case 0:
                         {
+
+                            _namingUpperPosition = "AA";
+                            _namingUpperPositionR2 = "AA";
+                            _namingLowerPosition = "aa";
+                           
+                           
+                          
                             SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
                             sortModeLabel.Visible = true;
+                            sortmentStatus.Visible = true;
                             doubleRatingMode = false;
                             sortmentStatus.Text = "Weighted Alphabet";
-                        }
-                        else
-                        {
-                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                            break;
                         }
 
-                        break;
-                    }
-
-                case 1:
-                    {
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-
-                        if (standardModeEnabled)
+                    case 1:
                         {
+                            _namingUpperPosition = "AA";
+                            _namingUpperPositionR2 = "AA";
+                            _namingLowerPosition = "aa";
+                          
+
+                          
                             SortedHouseList = houses;
                             sortModeLabel.Visible = true;
+                            sortmentStatus.Visible = true;
                             doubleRatingMode = false;
                             sortmentStatus.Text = "Preordered Dataset";
-                        } else
-                        {
-                            MessageBox.Show("Error: You have a double rating dataset currently loaded.");
+                            break;
                         }
 
-                        break;
-                    }
-
-                case 2:
-                    {
-                        _namingUpperPosition = "AA";
-                        _namingUpperPositionR2 = "AA";
-                        _namingLowerPosition = "aa";
-                        _namingLowerPositionR2 = "aa";
-
-                        if (doubleRatingEnabled)
-                        {
-                            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
-                            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
-                            sortModeLabel.Visible = true;
-                            doubleRatingMode = true;
-                            sortmentStatus.Text = "Double Rating";
-
-                        }
-                        else
-                        {
-                            MessageBox.Show("Error: Double Rating mode not supported by this dataset.");
-                        }
-                        break;
-                    }
-            }
-
-
+                }
+            } 
 
 
 
@@ -265,10 +294,9 @@ namespace DCSortment
             BackgroundWorker worker = sender as BackgroundWorker;
 
             // Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
-            fileNames = Directory.GetFiles(currentDirectory + "Files\\").ToList();
-            char[] splitCase = (currentDirectory + "Files\\").ToCharArray();
-            string completedDirectory = currentDirectory + "Files\\";
-            completedDirectory = Regex.Replace(completedDirectory, @"\\", ".");
+            fileNames = Directory.GetFiles(filesLocation.Text).ToList();
+            string completedDirectory = filesLocation.Text;
+            completedDirectory = Regex.Replace(filesLocation.Text, @"\\", ".") + "\\\\" ;
 
             //Go through each file name and remove the complete file directory leaving only the name
             foreach (string filename in fileNames)
@@ -423,7 +451,7 @@ namespace DCSortment
                             {
                                 fileExt = FinalFileNames[indexOfHouseFile].Split('.');
 
-                                File.Move(currentDirectory + "Files\\" + FinalFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameNames[houseIndex[currentHouse.houseName]] + "." + fileExt[1]);
+                                File.Move(filesLocation.Text + "\\" + FinalFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameNames[houseIndex[currentHouse.houseName]] + "." + fileExt[1]);
 
                                 //Once we've found and rename the file we can remove it from the list and then read in the next file
                                 FinalFileNames.RemoveAt(indexOfHouseFile);
@@ -484,7 +512,8 @@ namespace DCSortment
 
                                             _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
                                             fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+                                            string test = filesLocation + cleanFileNames[indexOfHouseFile];
+                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
 
                                             currentWorkCompleted += increasingPercent;
                                             if (((currentWorkCompleted / totalEntries) * 100) <= 100)
@@ -510,7 +539,8 @@ namespace DCSortment
 
                                             _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
                                             fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(currentDirectory + "Files\\" + cleanFileNames[indexOfHouseFile], currentDirectory + "Files\\" + renameName + "." + fileExt[1]);
+                                            string test = filesLocation.Text + renameName + "." + fileExt[1];
+                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
 
                                         }
 
@@ -551,7 +581,7 @@ namespace DCSortment
             else
             {
                 opStatusName.Text += "Done!";
-
+                xLSpreadsheetLocation.Text = dataSetName;
             }
         }
 
@@ -570,7 +600,7 @@ namespace DCSortment
 
             //Excel Variables
             Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(xLSpreadsheetLocation.Text);
+            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(dataSetName);
             Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
             Excel.Range xlRange = xlWorksheet.UsedRange;
 
@@ -582,8 +612,6 @@ namespace DCSortment
             int totalEntries = (rowCount * colCount) - 2;
             decimal increasingPercent = totalEntries * (decimal)0.10;
             decimal currentWorkCompleted = 0;
-            doubleRatingEnabled = true;
-            standardModeEnabled = true;
 
             if (colCount < 3)
             {
@@ -656,7 +684,7 @@ namespace DCSortment
 
         }
 
-      
+        
     }
 
     //Class to hold the house name and its corresponding rating.
