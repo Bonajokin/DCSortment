@@ -35,10 +35,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.sortingMethods = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.searchingTag = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.replacingTag = new System.Windows.Forms.TextBox();
+            this.prefix1 = new System.Windows.Forms.TextBox();
+            this.prefix1Label = new System.Windows.Forms.Label();
+            this.prefix2Label = new System.Windows.Forms.Label();
+            this.prefix2 = new System.Windows.Forms.TextBox();
             this.run = new System.Windows.Forms.Button();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.opStatusName = new System.Windows.Forms.ToolStripStatusLabel();
@@ -50,6 +50,10 @@
             this.fileBrowse = new System.Windows.Forms.Button();
             this.doubleRatingLB = new System.Windows.Forms.ListBox();
             this.initialLB = new System.Windows.Forms.ListBox();
+            this.searchingTagBox = new System.Windows.Forms.TextBox();
+            this.searchingTagLabel = new System.Windows.Forms.Label();
+            this.replacingTagBox = new System.Windows.Forms.TextBox();
+            this.replacingTagLabel = new System.Windows.Forms.Label();
             this.statusBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -110,43 +114,43 @@
             this.label2.TabIndex = 5;
             this.label2.Text = "Tag Definitions";
             // 
-            // searchingTag
+            // prefix1
             // 
-            this.searchingTag.Location = new System.Drawing.Point(264, 140);
-            this.searchingTag.Name = "searchingTag";
-            this.searchingTag.Size = new System.Drawing.Size(136, 20);
-            this.searchingTag.TabIndex = 6;
-            this.searchingTag.TextChanged += new System.EventHandler(this.searchingTag_TextChanged);
+            this.prefix1.Location = new System.Drawing.Point(264, 140);
+            this.prefix1.Name = "prefix1";
+            this.prefix1.Size = new System.Drawing.Size(136, 20);
+            this.prefix1.TabIndex = 6;
+            this.prefix1.TextChanged += new System.EventHandler(this.searchingTag_TextChanged);
             // 
-            // label3
+            // prefix1Label
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(163, 140);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(98, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Searching/Prefix 1:";
+            this.prefix1Label.AutoSize = true;
+            this.prefix1Label.Location = new System.Drawing.Point(163, 143);
+            this.prefix1Label.Name = "prefix1Label";
+            this.prefix1Label.Size = new System.Drawing.Size(80, 13);
+            this.prefix1Label.TabIndex = 7;
+            this.prefix1Label.Text = "Searching Tag:";
             // 
-            // label4
+            // prefix2Label
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(163, 178);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(98, 13);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Replacing/Prefix 2:";
+            this.prefix2Label.AutoSize = true;
+            this.prefix2Label.Location = new System.Drawing.Point(163, 174);
+            this.prefix2Label.Name = "prefix2Label";
+            this.prefix2Label.Size = new System.Drawing.Size(80, 13);
+            this.prefix2Label.TabIndex = 8;
+            this.prefix2Label.Text = "Replacing Tag:";
             // 
-            // replacingTag
+            // prefix2
             // 
-            this.replacingTag.Location = new System.Drawing.Point(264, 175);
-            this.replacingTag.Name = "replacingTag";
-            this.replacingTag.Size = new System.Drawing.Size(136, 20);
-            this.replacingTag.TabIndex = 9;
-            this.replacingTag.TextChanged += new System.EventHandler(this.replacingTag_TextChanged);
+            this.prefix2.Location = new System.Drawing.Point(264, 171);
+            this.prefix2.Name = "prefix2";
+            this.prefix2.Size = new System.Drawing.Size(136, 20);
+            this.prefix2.TabIndex = 9;
+            this.prefix2.TextChanged += new System.EventHandler(this.replacingTag_TextChanged);
             // 
             // run
             // 
-            this.run.Location = new System.Drawing.Point(464, 192);
+            this.run.Location = new System.Drawing.Point(464, 231);
             this.run.Name = "run";
             this.run.Size = new System.Drawing.Size(133, 23);
             this.run.TabIndex = 10;
@@ -159,7 +163,7 @@
             this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.opStatusName,
             this.opProgress});
-            this.statusBar.Location = new System.Drawing.Point(0, 227);
+            this.statusBar.Location = new System.Drawing.Point(0, 257);
             this.statusBar.Name = "statusBar";
             this.statusBar.Size = new System.Drawing.Size(611, 22);
             this.statusBar.TabIndex = 11;
@@ -178,7 +182,7 @@
             // sortModeLabel
             // 
             this.sortModeLabel.AutoSize = true;
-            this.sortModeLabel.Location = new System.Drawing.Point(380, 233);
+            this.sortModeLabel.Location = new System.Drawing.Point(380, 263);
             this.sortModeLabel.Name = "sortModeLabel";
             this.sortModeLabel.Size = new System.Drawing.Size(82, 13);
             this.sortModeLabel.TabIndex = 12;
@@ -187,7 +191,7 @@
             // sortmentStatus
             // 
             this.sortmentStatus.AutoSize = true;
-            this.sortmentStatus.Location = new System.Drawing.Point(462, 233);
+            this.sortmentStatus.Location = new System.Drawing.Point(462, 263);
             this.sortmentStatus.Name = "sortmentStatus";
             this.sortmentStatus.Size = new System.Drawing.Size(0, 13);
             this.sortmentStatus.TabIndex = 13;
@@ -234,14 +238,52 @@
             this.initialLB.FormattingEnabled = true;
             this.initialLB.Location = new System.Drawing.Point(19, 132);
             this.initialLB.Name = "initialLB";
-            this.initialLB.Size = new System.Drawing.Size(124, 82);
+            this.initialLB.Size = new System.Drawing.Size(124, 121);
             this.initialLB.TabIndex = 18;
+            // 
+            // searchingTagBox
+            // 
+            this.searchingTagBox.Location = new System.Drawing.Point(264, 201);
+            this.searchingTagBox.Name = "searchingTagBox";
+            this.searchingTagBox.Size = new System.Drawing.Size(136, 20);
+            this.searchingTagBox.TabIndex = 19;
+            this.searchingTagBox.TextChanged += new System.EventHandler(this.doubleRatingSearchingTag_TextChanged);
+            // 
+            // searchingTagLabel
+            // 
+            this.searchingTagLabel.AutoSize = true;
+            this.searchingTagLabel.Location = new System.Drawing.Point(163, 204);
+            this.searchingTagLabel.Name = "searchingTagLabel";
+            this.searchingTagLabel.Size = new System.Drawing.Size(80, 13);
+            this.searchingTagLabel.TabIndex = 20;
+            this.searchingTagLabel.Text = "Searching Tag:";
+            // 
+            // replacingTagBox
+            // 
+            this.replacingTagBox.Location = new System.Drawing.Point(264, 231);
+            this.replacingTagBox.Name = "replacingTagBox";
+            this.replacingTagBox.Size = new System.Drawing.Size(136, 20);
+            this.replacingTagBox.TabIndex = 21;
+            this.replacingTagBox.TextChanged += new System.EventHandler(this.replacingTagBox_TextChanged);
+            // 
+            // replacingTagLabel
+            // 
+            this.replacingTagLabel.AutoSize = true;
+            this.replacingTagLabel.Location = new System.Drawing.Point(163, 234);
+            this.replacingTagLabel.Name = "replacingTagLabel";
+            this.replacingTagLabel.Size = new System.Drawing.Size(80, 13);
+            this.replacingTagLabel.TabIndex = 22;
+            this.replacingTagLabel.Text = "Replacing Tag:";
             // 
             // GUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(611, 249);
+            this.ClientSize = new System.Drawing.Size(611, 279);
+            this.Controls.Add(this.replacingTagLabel);
+            this.Controls.Add(this.replacingTagBox);
+            this.Controls.Add(this.searchingTagLabel);
+            this.Controls.Add(this.searchingTagBox);
             this.Controls.Add(this.initialLB);
             this.Controls.Add(this.doubleRatingLB);
             this.Controls.Add(this.fileBrowse);
@@ -251,10 +293,10 @@
             this.Controls.Add(this.sortModeLabel);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.run);
-            this.Controls.Add(this.replacingTag);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.searchingTag);
+            this.Controls.Add(this.prefix2);
+            this.Controls.Add(this.prefix2Label);
+            this.Controls.Add(this.prefix1Label);
+            this.Controls.Add(this.prefix1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.sortingMethods);
             this.Controls.Add(this.label1);
@@ -282,10 +324,10 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ListBox sortingMethods;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox searchingTag;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox replacingTag;
+        private System.Windows.Forms.TextBox prefix1;
+        private System.Windows.Forms.Label prefix1Label;
+        private System.Windows.Forms.Label prefix2Label;
+        private System.Windows.Forms.TextBox prefix2;
         private System.Windows.Forms.Button run;
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripStatusLabel opStatusName;
@@ -297,5 +339,9 @@
         private System.Windows.Forms.Button fileBrowse;
         private System.Windows.Forms.ListBox doubleRatingLB;
         private System.Windows.Forms.ListBox initialLB;
+        private System.Windows.Forms.TextBox searchingTagBox;
+        private System.Windows.Forms.Label searchingTagLabel;
+        private System.Windows.Forms.TextBox replacingTagBox;
+        private System.Windows.Forms.Label replacingTagLabel;
     }
 }
