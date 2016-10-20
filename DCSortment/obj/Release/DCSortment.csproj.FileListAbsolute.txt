@@ -1,11 +1,11 @@
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Release\DCSortment.exe.config
-C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.csproj.ResolveComReference.cache
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Release\DCSortment.exe
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Release\DCSortment.pdb
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Release\DCSortment.exe.CodeAnalysisLog.xml
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\bin\Release\DCSortment.exe.lastcodeanalysissucceeded
-C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.exe
-C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.pdb
+C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.csprojResolveAssemblyReference.cache
+C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.csproj.ResolveComReference.cache
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.GUI.resources
 C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.csproj.GenerateResource.Cache
-C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.csprojResolveAssemblyReference.cache
+C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.exe
+C:\Users\Otis\documents\visual studio 2015\Projects\DCSortment\DCSortment\obj\Release\DCSortment.pdb

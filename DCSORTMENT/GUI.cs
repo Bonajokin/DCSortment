@@ -1,47 +1,156 @@
-﻿using System;
+﻿/*
+MIT License
+
+Copyright(c) 2016 Otis Bailey
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace DCSortment
 {
-    public partial class GUI : Form
+    public partial class GUI : Form, IGuiUpdate
     {
-        string dataSetName;
-        string userDefTag;
-        string userChngTag;
-        string _DRsearchTag;
-        string _DRreplacingTag;
-        string _namingUpperPosition = "AA";
-        string _namingUpperPositionR2 = "AA";
-        string _namingLowerPosition = "aa";
-        string _namingLowerPositionR2 = "aa";
-        
 
-        bool doubleRatingMode;
-        bool doubleRatingEnabled;
-        bool standardModeEnabled;
+   
 
-        //List Variables
-        List<House> houses = new List<House>();
-        List<House> secondRatingList = new List<House>();
-        List<House> SortedHouseList = null;
-        List<string> fileNames;
-        List<string> cleanFileNames = new List<string>();
+        IGuiUpdate IGui;
+
+        //GUI Updating Interface Implementations
+        private List<House> houses;
+        public List<House> Houses
+        {
+            get { return houses; }
+            set { this.Invoke((MethodInvoker)delegate { houses = value; }); }
+
+        }
+
+        private List<House> sortedHouseList;
+        public List<House> SortedHouseList
+        {
+            get { return sortedHouseList; }
+            set { this.Invoke((MethodInvoker)delegate { sortedHouseList = value; }); }
+
+        }
+
+        private List<House> secondRatingList;
+        public List<House> SecondRatingList
+        {
+            get { return secondRatingList; }
+            set { this.Invoke((MethodInvoker)delegate { secondRatingList = value; }); }
+
+        }
+
+        public string xLSpreadSheetText
+        {
+            get { return xLSpreadsheetLocation.Text; }
+            set { this.Invoke((MethodInvoker)delegate { xLSpreadsheetLocation.Text = value; }); }
+        }
+
+        public string _SMsearchingTag {
+            get {return prefix1.Text; }
+            set { this.Invoke((MethodInvoker)delegate { prefix1.Text = value; }); }
+        }
+
+        private string dataSetName;
+        public string DataSetName {
+            get { return dataSetName; }
+            set { dataSetName = value; }
+        }
+
+        public string _SMreplacingTag
+        {
+            get {return prefix2.Text; }
+            set { this.Invoke((MethodInvoker)delegate { prefix2.Text = value; }); }
+        }
+
+        public string _DRsearchingTag
+        {
+            get {return searchingTagBox.Text; }
+            set { this.Invoke((MethodInvoker)delegate { searchingTagBox.Text = value; }); }
+        }
+
+        public string _DRreplacingTag
+        {
+            get {return replacingTagBox.Text; }
+            set { this.Invoke((MethodInvoker)delegate { replacingTagBox.Text = value; }); }
+        }
+
+        private bool doubleRatingMode;
+        public bool DoubleRatingMode
+        {
+            get {return doubleRatingMode; }
+            set {doubleRatingMode = value; }
+        }
+
+        private bool doubleRatingEnabled;
+        public bool DoubleRatingEnabled
+        {
+            get {return doubleRatingEnabled; }
+            set {doubleRatingEnabled = value; }
+        }
+
+        private bool standardModeEnabled;
+        public bool StandardModeEnabled
+        {
+            get {return standardModeEnabled;}
+            set {standardModeEnabled = value; }
+        }
+
+        public string FilesLocation
+        {
+            get { return filesLocation.Text; }
+            set { this.Invoke((MethodInvoker)delegate { filesLocation.Text = value; }); }
+        }
+
+        public string StatusBarText
+        {
+            get { return opStatusName.Text; }
+            set { this.Invoke((MethodInvoker)delegate { opStatusName.Text = value; }); }
+        }
+
+        public bool ProgressBarVisible
+        {
+            get { return opProgress.Visible; }
+            set { this.Invoke((MethodInvoker)delegate { opProgress.Visible = value; }); }
+        }
+
+        public int ProgressBarValue
+        {
+            get { return opProgress.Value; }
+            set { this.Invoke((MethodInvoker)delegate { opProgress.Value = value; }); }
+        }
+
+        // End GUI Update Interface Implementations
+
+
 
 
         public GUI()
         {
             InitializeComponent();
+            IGui = this;
         }
 
         private void GUI_Load(object sender, EventArgs e)
@@ -58,10 +167,8 @@ namespace DCSortment
             searchingTagBox.Enabled = false;
             replacingTagBox.Visible = false;
             replacingTagBox.Visible = false;
-            
-
-
         }
+
 
         private void fileBrowse_Click(object sender, EventArgs e)
         {
@@ -70,6 +177,7 @@ namespace DCSortment
             if (dr == DialogResult.OK)
             {
                 filesLocation.Text = fbd.SelectedPath;
+                IGui.FilesLocation = filesLocation.Text;
             }
         }
 
@@ -78,18 +186,11 @@ namespace DCSortment
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Microsoft Excel Spreedsheet File (.xlsx)| *.xlsx";
             System.Windows.Forms.DialogResult dr = ofd.ShowDialog();
-            dataSetName = ofd.FileName;
             if (dr == DialogResult.OK)
             {
-                opStatusName.Text = "Parsing Spreadsheet: ";
-
-                BackgroundWorker w = new BackgroundWorker();
-                w.WorkerSupportsCancellation = true;
-                w.WorkerReportsProgress = true;
-                w.DoWork += XlSSworker_DoWork;
-                w.ProgressChanged += XlSSworker_ProgressChanged;
-                w.RunWorkerCompleted += XlSSworker_RunWorkerCompleted;
-                w.RunWorkerAsync();
+                IGui.DataSetName = ofd.FileName;
+                Workers worker = new Workers(IGui);
+                worker.runXLWorker();
                
             }
 
@@ -98,51 +199,42 @@ namespace DCSortment
 
         private void searchingTag_TextChanged(object sender, EventArgs e)
         {
-            userDefTag = prefix1.Text;
+            IGui._SMsearchingTag = prefix1.Text;
         }
 
         private void replacingTag_TextChanged(object sender, EventArgs e)
         {
-            userChngTag = prefix2.Text;
+            IGui._SMreplacingTag = prefix2.Text;
         }
 
         private void doubleRatingSearchingTag_TextChanged(object sender, EventArgs e)
         {
-            _DRsearchTag = searchingTagBox.Text;
+            IGui._DRsearchingTag = searchingTagBox.Text;
         }
 
         private void replacingTagBox_TextChanged(object sender, EventArgs e)
         {
-            _DRreplacingTag = replacingTagBox.Text;
+           IGui._DRreplacingTag = replacingTagBox.Text;
         }
 
         private void run_Click(object sender, EventArgs e)
         {
-            opStatusName.Text = "Renaming Files: ";
-            try
-            {
-                fileNames = Directory.GetFiles(filesLocation.Text).ToList();
-                BackgroundWorker w = new BackgroundWorker();
-                w.WorkerSupportsCancellation = true;
-                w.WorkerReportsProgress = true;
-                w.DoWork += renameWorker_DoWork;
-                w.RunWorkerCompleted += renameWorker_RunWorkerCompleted;
-                w.ProgressChanged += renameWorker_ProgressChanged;
-                w.RunWorkerAsync();
-            }
-            catch (DirectoryNotFoundException)
-            {
-
-                MessageBox.Show("Files Directory not found");
-
-            }
-
+            
+                if (allowRun())
+                {
+                    Workers worker = new Workers(IGui);
+                    worker.runRenameWorker();
+                }           
+                     
 
         }
 
         private void xLSpreadsheetLocation_TextChanged(object sender, EventArgs e)
         {
-            if (standardModeEnabled)
+            doubleRatingLB.ClearSelected();
+            sortingMethods.ClearSelected();
+
+            if (IGui.StandardModeEnabled)
             {
                 prefix1Label.Text = "Searching Tag:";
                 prefix2Label.Text = "Replacing Tag:";
@@ -168,7 +260,7 @@ namespace DCSortment
             }
             else {
                 prefix1Label.Text = "Prefix 1:";
-                prefix2Label.Text = "Prefix 2:";
+                prefix2Label.Text = "Prefix 2:"; 
                 doubleRatingLB.Visible = true;
                 doubleRatingLB.Enabled = true;
                 sortingMethods.Visible = false;
@@ -187,33 +279,33 @@ namespace DCSortment
                 searchingTagBox.Enabled = true;
                 replacingTagBox.Visible = true;
                 replacingTagBox.Visible = true;
-                sortModeLabel.Visible = true;
-                sortmentStatus.Visible = true;
-
             }
         }
 
         private void doubleRatingLB_SelectedIndexChanged(object sender, EventArgs e)
         {
-            _namingUpperPosition = "AA";
-            _namingUpperPositionR2 = "AA";
-            _namingLowerPosition = "aa";
-            _namingLowerPositionR2 = "aa";
-
-
-
-            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
-            secondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
-            searchingTagLabel.Visible = true;
-            replacingTagLabel.Visible = true;
-            searchingTagBox.Visible = true;
-            searchingTagBox.Enabled = true;
-            replacingTagBox.Visible = true;
-            replacingTagBox.Visible = true;
-            sortModeLabel.Visible = true;
-            sortmentStatus.Visible = true;
-            doubleRatingMode = true;
-            sortmentStatus.Text = "Double Rating";
+            switch (doubleRatingLB.SelectedIndex)
+            {
+                case 0:
+                    {
+                        IGui.SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+                        IGui.SecondRatingList = houses.OrderByDescending(house => house.rating[1]).ThenBy(house => house.houseName).ToList();
+                        opStatusName.Text = "";
+                        opProgress.Visible = false;
+                        searchingTagLabel.Visible = true;
+                        replacingTagLabel.Visible = true;
+                        searchingTagBox.Visible = true;
+                        searchingTagBox.Enabled = true;
+                        replacingTagBox.Visible = true;
+                        replacingTagBox.Visible = true;
+                        sortModeLabel.Visible = true;
+                        sortmentStatus.Visible = true;
+                        IGui.DoubleRatingMode = true;
+                        sortmentStatus.Text = "Double Rating";
+                        break;
+                    }
+            }
+     
 
         }
 
@@ -221,7 +313,7 @@ namespace DCSortment
         private void sortingMethods_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-            if (!doubleRatingEnabled)
+            if (!IGui.DoubleRatingEnabled)
             {
 
                 switch (sortingMethods.SelectedIndex)
@@ -229,15 +321,9 @@ namespace DCSortment
 
                     case 0:
                         {
-
-                            _namingUpperPosition = "AA";
-                            _namingUpperPositionR2 = "AA";
-                            _namingLowerPosition = "aa";
-                            _namingLowerPositionR2 = "aa";
-
-
-
-                            SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+                            IGui.SortedHouseList = houses.OrderByDescending(house => house.rating[0]).ThenBy(house => house.houseName).ToList();
+                            opStatusName.Text = "";
+                            opProgress.Visible = false;
                             sortModeLabel.Visible = true;
                             sortmentStatus.Visible = true;
                             searchingTagLabel.Visible = false;
@@ -246,18 +332,16 @@ namespace DCSortment
                             searchingTagBox.Enabled = false;
                             replacingTagBox.Visible = false;
                             replacingTagBox.Visible = false;
-                            doubleRatingMode = false;
+                            IGui.DoubleRatingMode = false;
                             sortmentStatus.Text = "Weighted Alphabet";
                             break;
                         }
 
                     case 1:
                         {
-                            _namingUpperPosition = "AA";
-                            _namingUpperPositionR2 = "AA";
-                            _namingLowerPosition = "aa";
-                            _namingLowerPositionR2 = "aa";
-                            SortedHouseList = houses;
+                            IGui.SortedHouseList = houses;
+                            opStatusName.Text = "";
+                            opProgress.Visible = false;
                             searchingTagLabel.Visible = false;
                             replacingTagLabel.Visible = false;
                             searchingTagBox.Visible = false;
@@ -266,7 +350,7 @@ namespace DCSortment
                             replacingTagBox.Visible = false;
                             sortModeLabel.Visible = true;
                             sortmentStatus.Visible = true;
-                            doubleRatingMode = false;
+                            IGui.DoubleRatingMode = false;
                             sortmentStatus.Text = "Preordered Dataset";
                             break;
                         }
@@ -278,514 +362,95 @@ namespace DCSortment
 
         }
 
-        //Helping Methods and Classes
 
-        //Method that controls the naming convention incrementation.
-        public static string incrementNamingConvention(string theString, bool isUpper)
+        private bool allowRun()
         {
-            char[] theCharString = theString.ToCharArray();
-
-            switch (isUpper)
+            switch (standardModeEnabled)
             {
-
+                //If standard mode was enabled make sure an index was selected in its list box and ensure all tag definitons were filled out if everything checks out allow the run if not don't allow it.
                 case true:
                     {
-                        if (((int)theCharString[1] + 1) > 90)
+                        if (sortingMethods.SelectedItems.Count < 1)
                         {
-                            return ((char)((int)theCharString[0] + 1)).ToString() + ((char)(65)).ToString();
+                            opStatusName.Text = "Error: Please select an item from sortment methods before running!!";
+                            opProgress.Visible = false;
+                            return false;
                         }
-                        else
+                        else if(prefix1.Text == "")
                         {
-                            return theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                            opStatusName.Text = "Error: Please ensure all tag definitions are completed before running!!";
+                            opProgress.Visible = false;
+                            return false;
                         }
-
+                        else if (prefix2.Text == "")
+                        {
+                            opStatusName.Text = "Error: Please ensure all tag definitions are completed before running!!";
+                            opProgress.Visible = false;
+                            return false;
+                        } 
+                        else {
+                            return true;
+                        }
                     }
+
+                //If standard mode was not enabled we goto double rating mode make sure an index was selected in its list box and ensure all tag definitons were filled out if everything checks out allow the run if not don't allow it.
                 case false:
                     {
-                        if (((int)theCharString[1] + 1) > 122)
+                        if (doubleRatingLB.SelectedItems.Count < 1)
                         {
-                            return ((char)((int)theCharString[0] + 1)).ToString() + ((char)(97)).ToString();
+                            opStatusName.Text = "Error: Please select an item from sortment methods before running!!";
+                            opProgress.Visible = false;
+                            return false;
+                        }
+                        else if (prefix1.Text == "" || prefix2.Text == "")
+                        {
+                            opStatusName.Text = "Error: Please ensure all tag definitions are completed before running!!";
+                            opProgress.Visible = false;
+                            return false;
+                        }
+                        else if (_DRsearchingTag == "" || _DRreplacingTag == "")
+                        {
+                            opStatusName.Text = "Error: Please ensure all tag definitions are completed before running!!";
+                            opProgress.Visible = false;
+                            return false;
                         }
                         else
                         {
-                            return theCharString[0].ToString() + ((char)((int)theCharString[1] + 1)).ToString();
+                            return true;
                         }
-
-                    }
-
-            }
-
-            return null;
-
-        }
-
-
-
-
-
-        //Background Worker Section
-
-        private void renameWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            opProgress.Visible = true;
-            opProgress.Value = e.ProgressPercentage;
-        }
-
-        private void renameWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-
-            if ((e.Cancelled == true))
-            {
-                opStatusName.Text = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
-            }
-
-            else if (!(e.Error == null))
-            {
-                opStatusName.Text = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
-            }
-
-            else
-            {
-                opStatusName.Text += "Done!";
-
-            }
-        }
-
-        private void renameWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker worker = sender as BackgroundWorker;
-
-            // Get the list of files in the directory that need to be renamed and prepare the filenames to be cleaned.
-            fileNames = Directory.GetFiles(filesLocation.Text).ToList();
-            string completedDirectory = filesLocation.Text;
-            completedDirectory = Regex.Replace(filesLocation.Text, @"\\", ".") + "\\\\" ;
-
-            //Go through each file name and remove the complete file directory leaving only the name
-            foreach (string filename in fileNames)
-            {
-                string[] splitName = Regex.Split(filename, @completedDirectory);
-                cleanFileNames.Add(splitName[1]);
-            }
-
-            //File rename variables
-            House currentHouse;
-            int indexOfHouseFile;
-            string renameName;
-            string[] fileExt;
-
-
-            switch (doubleRatingMode)
-            {
-                case true:
-                    {
-
-
-                        List<string> renameNames = new List<string>();
-                        List<string> cleanFileNameCopy = cleanFileNames.ToList();
-                        List<string> FinalFileNames = cleanFileNames.ToList();
-
-                        int totalEntries;
-                        totalEntries = cleanFileNames.Count + cleanFileNameCopy.Count + FinalFileNames.Count;
-
-                        decimal increasingPercent = totalEntries * (decimal)0.10;
-                        decimal currentWorkCompleted = 0;
-
-                        _DRsearchTag.Insert(0, "_");
-                        _DRreplacingTag.Insert(0, "_");
-
-
-                        //Dictionary Stuff
-                        Dictionary<string, string> Rating1Renames = new Dictionary<string, string>();
-                        Dictionary<string, string> Rating2Renames = new Dictionary<string, string>();
-
-
-
-                        foreach (House name in SortedHouseList)
-                        {
-                            //Find the index of the current file thats in the filelist
-                            currentHouse = name;
-                            indexOfHouseFile = cleanFileNames.FindIndex(x => x.CaseInsensitiveContains(currentHouse.houseName));
-
-                            //While the filelist actually has instances of that filename 
-                            while (cleanFileNames.Exists(x => x.CaseInsensitiveContains(currentHouse.houseName)))
-                            {
-
-                                //Make sure theres a real index found
-                                if (indexOfHouseFile != -1)
-                                {
-                                    //If the file contains "NEW" and it contains the current house name
-                                    if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(currentHouse.houseName))
-                                    {
-                                        if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(_DRsearchTag))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = userDefTag + _namingUpperPosition + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameName = userDefTag + _namingUpperPosition + "_" + currentHouse.rating[0].ToString("0.00");
-                                            }
-
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
-                                        }
-                                        else if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(_DRsearchTag))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = userDefTag + _namingLowerPosition + "_" + "UNKNOWN" + "_";
-                                            }
-                                            else
-                                            {
-                                                renameName = userDefTag + _namingLowerPosition + "_" + currentHouse.rating[0].ToString("0.00");
-                                            }
-
-                                            _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
-                                            Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
-
-
-                                        }
-                                    }
-
-
-                                    //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                    cleanFileNames.RemoveAt(indexOfHouseFile);
-
-                                    currentWorkCompleted += increasingPercent;
-                                    if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                                    {
-                                        worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                                    }
-
-                                }
-                            }
-                        }
-
-                        foreach (House name in secondRatingList)
-                        {
-                            //Find the index of the current file thats in the filelist
-                            currentHouse = name;
-                            indexOfHouseFile = cleanFileNameCopy.FindIndex(x => x.CaseInsensitiveContains(currentHouse.houseName));
-
-                            //While the filelist actually has instances of that filename 
-                            while (cleanFileNameCopy.Exists(x => x.CaseInsensitiveContains(currentHouse.houseName)))
-                            {
-
-                                //Make sure theres a real index found
-                                if (indexOfHouseFile != -1)
-                                {
-                                    //If the file contains "NEW" and it contains the current house name
-                                    if (cleanFileNameCopy[indexOfHouseFile].CaseInsensitiveContains(currentHouse.houseName))
-                                    {
-                                        if (cleanFileNameCopy[indexOfHouseFile].CaseInsensitiveContains(_DRsearchTag))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = "_" + userChngTag + _namingUpperPositionR2 + "_" + "UNKNOWN";
-                                            }
-
-                                            else
-                                            {
-                                                renameName = "_" + userChngTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
-                                            }
-
-                                            _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
-                                            Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
-
-                                        }
-
-                                        else if (!cleanFileNameCopy[indexOfHouseFile].CaseInsensitiveContains(_DRsearchTag))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = "_" + userChngTag + _namingLowerPositionR2 + "_" + "UNKNOWN" + "_" + _DRreplacingTag;
-                                            }
-                                            else
-                                            {
-                                                renameName = "_" + userChngTag + _namingLowerPositionR2 + "_" + currentHouse.rating[1].ToString("0.00") + "_" + _DRreplacingTag;
-                                            }
-
-                                            _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
-                                            Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
-
-                                        }
-                                    }
-
-
-                                    //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                    cleanFileNameCopy.RemoveAt(indexOfHouseFile);
-
-                                    currentWorkCompleted += increasingPercent;
-                                    if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                                    {
-                                        worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                                    }
-
-                                }
-                            }
-                        }
-
-                        foreach (String fileName in FinalFileNames) 
-                        {
-                            fileExt = fileName.Split('.');
-                            File.Move(filesLocation.Text + "\\" + fileName, filesLocation.Text + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1]);
-                            currentWorkCompleted += increasingPercent;
-                            if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                            {
-                                worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                            }
-                        }
-
-
-                    break;
-                    }
-            
-                        
-                case false:
-                    {
-
-                        int totalEntries;
-                        totalEntries = cleanFileNames.Count;
-
-                        decimal increasingPercent = totalEntries * (decimal)0.10;
-                        decimal currentWorkCompleted = 0;
-
-
-                        userDefTag.Insert(0, "_");
-                        userChngTag.Insert(0, "_");
-
-                        //For every house name in the sorted house list thats already in order
-                        foreach (House name in SortedHouseList)
-                        {
-                            {
-
-                                //Find the index of the current file thats in the filelist
-                                currentHouse = name;
-                                indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
-
-                                //While the filelist actually has instances of that filename 
-                                while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName)))
-                                {
-
-                                    //Make sure theres a real index found
-                                    if (indexOfHouseFile != -1)
-                                    {
-                                        //If the file contains "NEW" and it contains the current house name
-                                        if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-                                            //Determine the appropriate rename name and then rename the file
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingUpperPosition + "_" + (currentHouse.rating[0]).ToString("0.00");
-                                            }
-
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            string test = filesLocation + cleanFileNames[indexOfHouseFile];
-                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
-
-                                            currentWorkCompleted += increasingPercent;
-                                            if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                                            {
-                                                worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                                            }
-                                        }
-
-                                        //If the file does not contain "NEW" and it contains the current house name
-                                        if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(userDefTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-
-                                            //Determine the appropriate rename name and then rename the file
-
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN" + "_" + userChngTag;
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingLowerPosition + "_" + (currentHouse.rating[0]).ToString("0.00") + "_" + userChngTag;
-                                            }
-
-                                            _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            string test = filesLocation.Text + renameName + "." + fileExt[1];
-                                            File.Move(filesLocation.Text + "\\" + cleanFileNames[indexOfHouseFile], filesLocation.Text + "\\" + renameName + "." + fileExt[1]);
-
-                                        }
-
-                                        //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                        cleanFileNames.RemoveAt(indexOfHouseFile);
-
-                                        currentWorkCompleted += increasingPercent;
-                                        if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                                        {
-                                            worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
-                        break;
+                       
                     }
             }
+
+            //By default we should never get here but just incase we do don't allow the run to preserve potential damage to files
+            return false;
         }
-
-
-
-
-        private void XlSSworker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if ((e.Cancelled == true))
-            {
-                opStatusName.Text = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
-            }
-
-            else if (!(e.Error == null))
-            {
-                opStatusName.Text = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
-            }
-
-            else
-            {
-                opStatusName.Text += "Done!";
-                xLSpreadsheetLocation.Text = dataSetName;
-            }
-        }
-
-        private void XlSSworker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            opProgress.Visible = true;
-            opProgress.Value = e.ProgressPercentage;
-        }
-
-        private void XlSSworker_DoWork(object sender, DoWorkEventArgs e)
-        {
-
-            BackgroundWorker worker = sender as BackgroundWorker;
-
-            houses.Clear();
-
-            //Excel Variables
-            Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(dataSetName);
-            Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-            Excel.Range xlRange = xlWorksheet.UsedRange;
-
-            //Reading and storing input dataset
-            string input = "";
-            double num;
-            int rowCount = xlRange.Rows.Count;
-            int colCount = xlRange.Columns.Count;
-            int totalEntries = (rowCount * colCount) - 2;
-            decimal increasingPercent = totalEntries * (decimal)0.10;
-            decimal currentWorkCompleted = 0;
-
-            if (colCount < 3)
-            {
-                doubleRatingEnabled = false;
-                standardModeEnabled = true;
-            } else if (colCount == 3)
-            {
-                doubleRatingEnabled = true;
-                standardModeEnabled = false;
-            }
-
-            for (int i = 2; i <= rowCount; i++)
-            {
-                House temp = new House();
-
-                for (int j = 1; j <= colCount; j++)
-                {
-
-
-                    if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
-                    {
-
-                        //If the current value being parsed is a number
-                        if (double.TryParse(xlRange.Cells[i, j].Value2.ToString(), out num))
-                        {
-                            // Make a new House object and set its name and rating, then add it to the list of houses.
-                            temp.rating.Add(Double.Parse(num.ToString("0.00")));
-
-                        }
-
-                        // If the current value isn't a number then it must be a house name so we store it while we wait for its rating.
-                        else
-                        {
-                            input = xlRange.Cells[i, j].Value2.ToString();
-                            temp.houseName = input;
-                        }
-
-                    }
-
-                    currentWorkCompleted += increasingPercent;
-                    if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                    {
-                        worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                    }
-                }
-
-                houses.Add(temp);
-
-                currentWorkCompleted += increasingPercent;
-                if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                {
-                    worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                }
-
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-
-            Marshal.ReleaseComObject(xlRange);
-            Marshal.ReleaseComObject(xlWorksheet);
-
-            xlWorkbook.Close(0);
-            
-            Marshal.ReleaseComObject(xlWorkbook);
-
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlApp);
-
-        }
-
-       
-    }
-
-    //Class to hold the house name and its corresponding rating.
-    public class House
-    {
-
-        public string houseName { get; set; }
-        public List<double> rating = new List<double>();
-
 
     }
 
-    public static class Extensions
-    {
-        public static bool CaseInsensitiveContains(this string text, string value,
-            StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
-        {
-            return text.IndexOf(value, stringComparison) >= 0;
+    
 
-        }
+ interface IGuiUpdate{
 
+        string FilesLocation { get; set; }
+        string DataSetName { get; set; }
+        string xLSpreadSheetText { get; set; }
+        string StatusBarText { get; set; }
+        int ProgressBarValue { get; set; }
+        bool ProgressBarVisible { get; set; }
+        string _SMsearchingTag { get; set; }
+        string _SMreplacingTag { get; set; }
+        string _DRsearchingTag { get; set; }
+        string _DRreplacingTag { get; set; }
 
+        bool DoubleRatingMode { get; set; }
+        bool DoubleRatingEnabled { get; set; }
+        bool StandardModeEnabled { get; set; }
 
-
+        List<House> Houses { get; set; }
+        List<House> SecondRatingList { get; set; }
+        List<House> SortedHouseList { get; set; }
     }
+
+
 }
