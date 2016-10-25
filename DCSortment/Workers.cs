@@ -29,7 +29,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace DCSortment
@@ -125,12 +124,12 @@ namespace DCSortment
 
             if ((e.Cancelled == true))
             {
-                IGui.StatusBarText = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
+                IGui.StatusBarText = "Error: The file selected is not an Excel Spreadsheet or it is corrupted.";
             }
 
             else if (!(e.Error == null))
             {
-                IGui.StatusBarText = "Error: The file selected is not an Excel Spreadsheet or it is corrupted please try again.";
+                IGui.StatusBarText = "Error: The file selected is not an Excel Spreadsheet or it is corrupted.";
             }
 
             else
@@ -218,18 +217,26 @@ namespace DCSortment
                                             if (currentHouse.rating[0] == 0.00)
                                             {
                                                 renameName = IGui._SMsearchingTag + _namingUpperPosition + "_" + "UNKNOWN";
+                                                _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
+                                            }
+
+                                            else if (currentHouse.rating[0] == -1)
+                                            {
+                                                renameName = "";
+
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                             }
 
                                             //If it does have a rating (_SMsearchingTag equals Prefix1 in Double Rating mode) the format will be Prefix1 + Next Open Naming Convention + Rating 1
                                             else
                                             {
                                                 renameName = IGui._SMsearchingTag + _namingUpperPosition + "_" + currentHouse.rating[0].ToString("0.00");
+                                                _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                             }
-
-                                            //Increment the naming convention used here and then add the rename name to the appropriate dictionary for later.
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                         }
+
                                         else if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._DRsearchingTag))
                                         {
                                             //Determine the appropriate rename name and then rename the file
@@ -238,17 +245,22 @@ namespace DCSortment
                                             if (currentHouse.rating[0] == 0.00)
                                             {
                                                 renameName = IGui._SMsearchingTag + _namingLowerPosition + "_" + "UNKNOWN" + "_";
+                                                _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                             }
+
+                                            else if (currentHouse.rating[0] == -1)
+                                            {
+                                                renameName = "_";
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
+                                            }
+
                                             else
                                             {
                                                 renameName = IGui._SMsearchingTag + _namingLowerPosition + "_" + currentHouse.rating[0].ToString("0.00");
+                                                _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
+                                                Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                             }
-
-                                            //Increment the naming convention used here and then add the rename name to the appropriate dictionary for later.
-                                            _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
-                                            Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
-
-
                                         }
                                     }
 
@@ -287,19 +299,25 @@ namespace DCSortment
                                             //Determine the appropriate rename name and then rename the file
 
                                             // If the house has no rating then its rating becomes UNKNOWN 
-                                            if (currentHouse.rating[0] == 0.00)
+                                            if (currentHouse.rating[1] == 0.00)
                                             {
                                                 renameName = "_" + IGui._SMreplacingTag + _namingUpperPositionR2 + "_" + "UNKNOWN";
+                                                _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                            }
+
+                                            else if (currentHouse.rating[1] == -1)
+                                            {
+                                                renameName = "";
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
                                             }
 
                                             else
                                             {
                                                 renameName = "_" + IGui._SMreplacingTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
+                                                _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
                                             }
-
-                                            //Increment the naming convention used here and then add the rename name to the appropriate dictionary for later.
-                                            _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
-                                            Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
 
                                         }
 
@@ -308,18 +326,27 @@ namespace DCSortment
                                             //Determine the appropriate rename name and then rename the file
 
                                             // If the house has no rating then its rating becomes UNKNOWN 
-                                            if (currentHouse.rating[0] == 0.00)
+                                            if (currentHouse.rating[1] == 0.00)
                                             {
                                                 renameName = "_" + IGui._SMreplacingTag + _namingLowerPositionR2 + "_" + "UNKNOWN" + "_" +IGui._DRreplacingTag;
+                                                _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
                                             }
+
+                                            else if (currentHouse.rating[1] == -1)
+                                            {
+                                                renameName = "_" + IGui._DRreplacingTag;
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                            }
+
                                             else
                                             {
                                                 renameName = "_" + IGui._SMreplacingTag + _namingLowerPositionR2 + "_" + currentHouse.rating[1].ToString("0.00") + "_" +IGui._DRreplacingTag;
+                                                _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
+                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
                                             }
 
-                                            //Increment the naming convention used here and then add the rename name to the appropriate dictionary for later.
-                                            _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
-                                            Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                           
 
                                         }
                                     }
@@ -344,7 +371,10 @@ namespace DCSortment
                         {
                             //Split the filename on the '.' leaving us with the filename itself and then the file extension.
                             fileExt = fileName.Split('.');
-
+                            {
+                            string defaultFile = filesLocation + "\\" + fileName;
+                            string RenameFile = filesLocation + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1];
+                            }
                             //Rename the current fileName to its appropriate name by using the dictionaries. Convention here is Location of Files + filename -> location of files + R1Rename + R2Rename + file extension.
                             File.Move(filesLocation + "\\" + fileName, filesLocation + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1]);
 
@@ -553,7 +583,13 @@ namespace DCSortment
                         }
 
                         // If the current value isn't a number then it must be a house name so we store it while we wait for its rating.
+                        else if(xlRange.Cells[i, j].Value2.ToString() ==  "DNE" || xlRange.Cells[i, j].Value2.ToString() == "dne")
+                        {
+                            temp.rating.Add(-1);
+                        }
+
                         else
+                           
                         {
                             input = xlRange.Cells[i, j].Value2.ToString();
                             temp.houseName = input;
