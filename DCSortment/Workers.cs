@@ -164,6 +164,9 @@ namespace DCSortment
             string renameName;
             string[] fileExt;
 
+            bool allowRename = false;
+         
+
 
             switch (IGui.DoubleRatingMode)
             {
@@ -212,7 +215,7 @@ namespace DCSortment
                                         if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._DRsearchingTag))
                                         {
                                             //Determine the appropriate rename name and save it for later
-
+                                            allowRename = true;
                                             // If the house has no rating then its rating becomes UNKNOWN 
                                             if (currentHouse.rating[0] == 0.00)
                                             {
@@ -251,7 +254,7 @@ namespace DCSortment
 
                                             else if (currentHouse.rating[0] == -1)
                                             {
-                                                renameName = "_";
+                                                renameName = "";
                                                 Rating1Renames.Add(cleanFileNames[indexOfHouseFile], renameName);
                                             }
 
@@ -296,6 +299,8 @@ namespace DCSortment
                                     {
                                         if (cleanFileNameCopy[indexOfHouseFile].CaseInsensitiveContains(IGui._DRsearchingTag))
                                         {
+
+                                            allowRename = true;
                                             //Determine the appropriate rename name and then rename the file
 
                                             // If the house has no rating then its rating becomes UNKNOWN 
@@ -314,9 +319,18 @@ namespace DCSortment
 
                                             else
                                             {
-                                                renameName = "_" + IGui._SMreplacingTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
-                                                _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
-                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                if (currentHouse.rating[0] != -1)
+                                                {
+                                                    renameName = "_" + IGui._SMreplacingTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
+                                                    _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
+                                                    Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                }
+                                                else
+                                                {
+                                                    renameName = IGui._SMreplacingTag + _namingUpperPositionR2 + "_" + currentHouse.rating[1].ToString("0.00");
+                                                    _namingUpperPositionR2 = incrementNamingConvention(_namingUpperPositionR2, true);
+                                                    Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                }
                                             }
 
                                         }
@@ -341,9 +355,18 @@ namespace DCSortment
 
                                             else
                                             {
-                                                renameName = "_" + IGui._SMreplacingTag + _namingLowerPositionR2 + "_" + currentHouse.rating[1].ToString("0.00") + "_" +IGui._DRreplacingTag;
-                                                _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
-                                                Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                if (currentHouse.rating[0] != -1)
+                                                {
+                                                    renameName = "_" + IGui._SMreplacingTag + _namingLowerPositionR2 + "_" + currentHouse.rating[1].ToString("0.00") + "_" + IGui._DRreplacingTag;
+                                                    _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
+                                                    Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                }
+                                                else
+                                                {
+                                                    renameName = IGui._SMreplacingTag + _namingLowerPositionR2 + "_" + currentHouse.rating[1].ToString("0.00") + "_" + IGui._DRreplacingTag;
+                                                    _namingLowerPositionR2 = incrementNamingConvention(_namingLowerPositionR2, false);
+                                                    Rating2Renames.Add(cleanFileNameCopy[indexOfHouseFile], renameName);
+                                                }
                                             }
 
                                            
@@ -366,24 +389,28 @@ namespace DCSortment
                             }
                         }
 
-                        //Renaming of files
-                        foreach (String fileName in FinalFileNames)
+                        if (allowRename == true)
                         {
-                            //Split the filename on the '.' leaving us with the filename itself and then the file extension.
-                            fileExt = fileName.Split('.');
+                            //Renaming of files
+                            foreach (String fileName in FinalFileNames)
                             {
-                            string defaultFile = filesLocation + "\\" + fileName;
-                            string RenameFile = filesLocation + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1];
-                            }
-                            //Rename the current fileName to its appropriate name by using the dictionaries. Convention here is Location of Files + filename -> location of files + R1Rename + R2Rename + file extension.
-                            File.Move(filesLocation + "\\" + fileName, filesLocation + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1]);
+                                //Split the filename on the '.' leaving us with the filename itself and then the file extension.
+                                fileExt = fileName.Split('.');
 
-                            //Increase work completed by the predetermined increasing percent per work completed and report progress.
-                            currentWorkCompleted += increasingPercent;
-                            if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                            {
-                                worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
+                                //Rename the current fileName to its appropriate name by using the dictionaries. Convention here is Location of Files + filename -> location of files + R1Rename + R2Rename + file extension.
+                                File.Move(filesLocation + "\\" + fileName, filesLocation + "\\" + Rating1Renames[fileName] + Rating2Renames[fileName] + "." + fileExt[1]);
+
+                                //Increase work completed by the predetermined increasing percent per work completed and report progress.
+                                currentWorkCompleted += increasingPercent;
+                                if (((currentWorkCompleted / totalEntries) * 100) <= 100)
+                                {
+                                    worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
+                                }
                             }
+                        } else
+                        {
+                            IGui.ProgressBarVisible = false;
+                            IGui.StatusBarText = "Error: Searching Tag not found, please check it for correctness.";
                         }
 
 
