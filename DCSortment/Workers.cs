@@ -420,7 +420,7 @@ namespace DCSortment
 
                 case false:
                     {
-
+                        bool allowRun = false;
                         int totalEntries;
                         totalEntries = cleanFileNames.Count;
 
@@ -431,43 +431,88 @@ namespace DCSortment
                         IGui._SMsearchingTag.Insert(0, "_");
                         IGui._SMreplacingTag.Insert(0, "_");
 
-                        //For every house name in the sorted house list thats already in order
-                        foreach (House name in IGui.SortedHouseList)
+                        foreach (string name in cleanFileNames)
                         {
+                            if (name.CaseInsensitiveContains(IGui._SMsearchingTag))
                             {
+                                allowRun = true;
+                            }
+                        }
 
-                                //Find the index of the current file thats in the filelist
-                                currentHouse = name;
-                                indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
+                        if (allowRun == true)
+                        {
 
-                                //While the filelist actually has instances of that filename 
-                                while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName)))
+                            //For every house name in the sorted house list thats already in order
+                            foreach (House name in IGui.SortedHouseList)
+                            {
                                 {
 
-                                    //Make sure theres a real index found
-                                    if (indexOfHouseFile != -1)
+                                    //Find the index of the current file thats in the filelist
+                                    currentHouse = name;
+                                    indexOfHouseFile = cleanFileNames.FindIndex(x => x.Contains(currentHouse.houseName));
+
+                                    //While the filelist actually has instances of that filename 
+                                    while (cleanFileNames.Exists(x => x.Contains(currentHouse.houseName)))
                                     {
-                                        //If the file contains the searching tag and it contains the current house name
-                                        if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._SMsearchingTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+
+                                        //Make sure theres a real index found
+                                        if (indexOfHouseFile != -1)
                                         {
-                                            //Determine the appropriate rename name and then rename the file
-
-                                            // If the house has no rating then its rating becomes UNKNOWN 
-                                            if (currentHouse.rating[0] == 0.00)
+                                            //If the file contains the searching tag and it contains the current house name
+                                            if (cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._SMsearchingTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
                                             {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN";
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingUpperPosition + "_" + (currentHouse.rating[0]).ToString("0.00");
+                                                //Determine the appropriate rename name and then rename the file
+
+                                                // If the house has no rating then its rating becomes UNKNOWN 
+                                                if (currentHouse.rating[0] == 0.00)
+                                                {
+                                                    renameName = _namingUpperPosition + "_" + "UNKNOWN";
+                                                }
+                                                else
+                                                {
+                                                    renameName = _namingUpperPosition + "_" + (currentHouse.rating[0]).ToString("0.00");
+                                                }
+
+                                                //increment naming convention
+                                                _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
+
+                                                //Split on file extension and then rename the files.
+                                                fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                                File.Move(filesLocation + "\\" + cleanFileNames[indexOfHouseFile], filesLocation + "\\" + renameName + "." + fileExt[1]);
+
+                                                //Increase work completed by the predetermined increasing percent per work completed and report progress.
+                                                currentWorkCompleted += increasingPercent;
+                                                if (((currentWorkCompleted / totalEntries) * 100) <= 100)
+                                                {
+                                                    worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
+                                                }
                                             }
 
-                                            //increment naming convention
-                                            _namingUpperPosition = incrementNamingConvention(_namingUpperPosition, true);
-                                            
-                                            //Split on file extension and then rename the files.
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(filesLocation + "\\" + cleanFileNames[indexOfHouseFile], filesLocation + "\\" + renameName + "." + fileExt[1]);
+                                            //If the file does not contain "NEW" and it contains the current house name
+                                            if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._SMsearchingTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
+                                            {
+
+                                                //Determine the appropriate rename name and then rename the file
+
+                                                if (currentHouse.rating[0] == 0.00)
+                                                {
+                                                    renameName = _namingUpperPosition + "_" + "UNKNOWN" + "_" + IGui._SMreplacingTag;
+                                                }
+                                                else
+                                                {
+                                                    renameName = _namingLowerPosition + "_" + (currentHouse.rating[0]).ToString("0.00") + "_" + IGui._SMreplacingTag;
+                                                }
+                                                //Increment naming convention
+                                                _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
+
+                                                //Split file name and extension and then rename the files.
+                                                fileExt = cleanFileNames[indexOfHouseFile].Split('.');
+                                                File.Move(filesLocation + "\\" + cleanFileNames[indexOfHouseFile], filesLocation + "\\" + renameName + "." + fileExt[1]);
+
+                                            }
+
+                                            //Once we've found and rename the file we can remove it from the list and then read in the next file
+                                            cleanFileNames.RemoveAt(indexOfHouseFile);
 
                                             //Increase work completed by the predetermined increasing percent per work completed and report progress.
                                             currentWorkCompleted += increasingPercent;
@@ -475,44 +520,16 @@ namespace DCSortment
                                             {
                                                 worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
                                             }
-                                        }
-
-                                        //If the file does not contain "NEW" and it contains the current house name
-                                        if (!cleanFileNames[indexOfHouseFile].CaseInsensitiveContains(IGui._SMsearchingTag) && cleanFileNames[indexOfHouseFile].Contains(currentHouse.houseName))
-                                        {
-
-                                            //Determine the appropriate rename name and then rename the file
-
-                                            if (currentHouse.rating[0] == 0.00)
-                                            {
-                                                renameName = _namingUpperPosition + "_" + "UNKNOWN" + "_" + IGui._SMreplacingTag;
-                                            }
-                                            else
-                                            {
-                                                renameName = _namingLowerPosition + "_" + (currentHouse.rating[0]).ToString("0.00") + "_" + IGui._SMreplacingTag;
-                                            }
-                                            //Increment naming convention
-                                            _namingLowerPosition = incrementNamingConvention(_namingLowerPosition, false);
-
-                                            //Split file name and extension and then rename the files.
-                                            fileExt = cleanFileNames[indexOfHouseFile].Split('.');
-                                            File.Move(filesLocation + "\\" + cleanFileNames[indexOfHouseFile], filesLocation + "\\" + renameName + "." + fileExt[1]);
 
                                         }
-
-                                        //Once we've found and rename the file we can remove it from the list and then read in the next file
-                                        cleanFileNames.RemoveAt(indexOfHouseFile);
-
-                                        //Increase work completed by the predetermined increasing percent per work completed and report progress.
-                                        currentWorkCompleted += increasingPercent;
-                                        if (((currentWorkCompleted / totalEntries) * 100) <= 100)
-                                        {
-                                            worker.ReportProgress(Convert.ToInt32((currentWorkCompleted / totalEntries) * 100));
-                                        }
-
                                     }
                                 }
                             }
+                        } 
+                        else
+                        {
+                            IGui.ProgressBarVisible = false;
+                            IGui.StatusBarText = "Error: Searching Tag not found, please check it for correctness.";
                         }
 
                         break;
